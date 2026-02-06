@@ -1830,7 +1830,7 @@
         };
 
         // Cargar datos de población desde archivo JSON externo
-        fetch("poblacion_veracruz.json")
+        fetch("poblacion_completa.json")
             .then(r => {
                 if (!r.ok) throw new Error("poblacion_veracruz.json no encontrado");
                 return r.json();
