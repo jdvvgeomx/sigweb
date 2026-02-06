@@ -10,4 +10,4 @@ services:
       - key: SECRET_KEY
         generateValue: true
       - key: GOOGLE_CLIENT_ID
-        value: TU_CLIENT_ID_DE_GOOGLE.apps.googleusercontent.com
+        value: 481357191308-c06t135ahrb8nnk1vq6nfo0bcqn33cdl.apps.googleusercontent.com

@@ -17,7 +17,7 @@ from google.auth.transport import requests as google_requests
 SECRET_KEY = os.environ.get("SECRET_KEY", "uveracruzana_super_secret_key_2026")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 # 1 día
-GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", "TU_GOOGLE_CLIENT_ID.apps.googleusercontent.com")
+GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", "481357191308-c06t135ahrb8nnk1vq6nfo0bcqn33cdl.apps.googleusercontent.com")
 
 pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/v1/auth/login")
