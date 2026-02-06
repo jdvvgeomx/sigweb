@@ -2262,6 +2262,7 @@
                     })
                 });
 
+                const userRole = localStorage.getItem('sig_role');
                 const container = document.createElement('div');
                 container.style.minWidth = "220px";
                 container.innerHTML = `
@@ -2271,10 +2272,10 @@
                         ${point.address ? `<p><strong>Dirección:</strong> ${point.address}</p>` : ''}
                         <p style="font-size: 10px; opacity: 0.7;">Lat: ${point.lat.toFixed(6)}, Lng: ${point.lng.toFixed(6)}</p>
                         <div style="display: flex; gap: 8px; margin-top: 8px;">
-                            ${authToken ? `
+                            ${(authToken && userRole === 'admin') ? `
                             <button onclick="editCustomPoint(${point.id})" style="flex:1; padding:4px; border-radius:4px; background:#F6C453; color:#1e3c72; border:none; cursor:pointer; font-weight:600;">Editar</button>
                             <button onclick="window.deleteCustomPoint(${point.id})" style="flex:1; padding:4px; border-radius:4px; background:#ef4444; color:white; border:none; cursor:pointer; font-weight:600;">Borrar</button>
-                            ` : '<p style="font-size:10px; opacity:0.6; text-align:center; width:100%;">Inicia sesión como admin para editar</p>'}
+                            ` : (authToken ? '<p style="font-size:10px; opacity:0.6; text-align:center; width:100%;">Solo el administrador puede editar o borrar</p>' : '<p style="font-size:10px; opacity:0.6; text-align:center; width:100%;">Inicia sesión para proponer puntos</p>')}
                         </div>
                     </div>
                 `;
@@ -2376,6 +2377,7 @@
 
                     localStorage.setItem('sig_token', authToken);
                     localStorage.setItem('sig_user', currentUser);
+                    localStorage.setItem('sig_role', data.user.role || 'user');
 
                     updateAuthUI();
                     closeLoginModal();
@@ -2396,6 +2398,7 @@
             currentUser = null;
             localStorage.removeItem('sig_token');
             localStorage.removeItem('sig_user');
+            localStorage.removeItem('sig_role');
             localStorage.removeItem('sig_picture');
             updateAuthUI();
             showNotification('Sesión cerrada', 'info');
@@ -2514,6 +2517,7 @@
 
                     localStorage.setItem('sig_token', authToken);
                     localStorage.setItem('sig_user', currentUser);
+                    localStorage.setItem('sig_role', data.user.role || 'user');
                     if (picture) localStorage.setItem('sig_picture', picture);
 
                     updateAuthUI();
