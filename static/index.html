@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Mapa Interactivo - Geografía de los Servicios </title>
+    <title>Mapa Interactivo</title>
     <!-- Favicon generado por código (SVG) -->
     <link rel="icon"
         href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><defs><linearGradient id=%22g%22 x1=%220%25%22 y1=%220%25%22 x2=%22100%25%22 y2=%22100%25%22><stop offset=%220%25%22 style=%22stop-color:%23006847;stop-opacity:1%22 /><stop offset=%22100%25%22 style=%22stop-color:%23F6C453;stop-opacity:1%22 /></linearGradient></defs><circle cx=%2250%22 cy=%2250%22 r=%2248%22 fill=%22url(%23g)%22 /><path d=%22M50 20c-11 0-20 9-20 20 0 15 20 40 20 40s20-25 20-40c0-11-9-20-20-20zm0 30a10 10 0 110-20 10 10 0 010 20z%22 fill=%22white%22 /><path d=%22M35 45h30M40 35c0 8.3 4.5 15 10 15s10-6.7 10-15%22 fill=%22none%22 stroke=%22rgba(255,255,255,0.3)%22 stroke-width=%222%22/></svg>">
@@ -600,6 +600,74 @@
             transform: rotate(90deg);
         }
 
+        /* Estilos sociales */
+        .social-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .social-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .social-btn.liked {
+            color: #ef4444;
+            border-color: #ef4444/40;
+            background: #ef4444/10;
+        }
+
+        #comments-container {
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .comment-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 8px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            font-size: 11px;
+        }
+
+        .comment-item b {
+            color: #F6C453;
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        .comment-time {
+            font-size: 9px;
+            opacity: 0.5;
+            display: block;
+            margin-top: 4px;
+        }
+
+        .upload-area {
+            border: 2px dashed rgba(246, 196, 83, 0.3);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .upload-area:hover {
+            background: rgba(246, 196, 83, 0.05);
+            border-color: #F6C453;
+        }
+
         /* Botón de control para activar modo de marcado */
         .marker-mode-btn {
             background: rgba(255, 255, 255, 0.15);
@@ -925,10 +993,20 @@
             </div>
 
             <div class="form-group">
-                <label for="point-image">
-                    <i class="fas fa-image"></i> URL de Imagen (opcional)
+                <label>
+                    <i class="fas fa-camera"></i> Imagen del Punto
                 </label>
-                <input type="url" id="point-image" placeholder="https://ejemplo.com/foto.jpg" />
+                <div class="upload-area" onclick="document.getElementById('file-upload').click()">
+                    <i class="fas fa-cloud-upload-alt text-2xl text-[#F6C453] mb-2"></i>
+                    <p class="text-xs opacity-70">Haz clic para subir desde tu celular o PC</p>
+                    <p id="upload-status" class="text-[10px] text-[#10b981] mt-1 font-bold"></p>
+                </div>
+                <input type="file" id="file-upload" class="hidden" accept="image/*" onchange="handleFileUpload(this)" />
+                <input type="hidden" id="point-image" />
+                <p class="text-[9px] opacity-50 mt-1">O pega una URL directa:</p>
+                <input type="url" id="point-image-url" placeholder="https://ejemplo.com/foto.jpg"
+                    oninput="document.getElementById('point-image').value = this.value" class="login-input mt-1"
+                    style="font-size: 10px; padding: 8px;" />
             </div>
 
             <div class="form-group">
@@ -1093,7 +1171,7 @@
                 layers.nacional.clearLayers();
 
 
-                fetch('Nacional.geojson').then(r => r.json()).then(data => {
+                fetch('Nacional_opt.geojson').then(r => r.json()).then(data => {
                     const isDarkLayer = (layerName === 'Satélite Híbrido');
 
                     const nationalStyle = isDarkLayer ?
@@ -1147,10 +1225,10 @@
 
 
         var layers = {
-            nacional: L.layerGroup(),
-            estatal: L.layerGroup(),
-            municipios: L.layerGroup(),
-            regionesUV: L.layerGroup(),
+            nacional: L.featureGroup(),
+            estatal: L.featureGroup(),
+            municipios: L.featureGroup(),
+            regionesUV: L.featureGroup(),
             servicios: { 1: L.layerGroup(), 2: L.layerGroup(), 3: L.layerGroup(), 4: L.layerGroup(), 5: L.layerGroup() }
         };
 
@@ -1586,7 +1664,7 @@
             actualizarLeyenda('nacional');
             // updateServicePointsForScale(); // Eliminado
 
-            fetch('Nacional.geojson').then(r => r.json()).then(data => {
+            fetch('Nacional_opt.geojson').then(r => r.json()).then(data => {
 
                 const isDarkLayer = (currentBaseLayer === baseLayers['CartoDB Dark'] ||
                     currentBaseLayer === baseLayers['Satélite']);
@@ -1597,7 +1675,7 @@
 
                 const layer = L.geoJSON(data, { style: nationalStyle }).addTo(layers.nacional);
                 try { map.fitBounds(layer.getBounds(), { padding: [30, 30] }); } catch (e) { }
-            }).catch(e => console.warn("Nacional.geojson error", e));
+            }).catch(e => console.warn("Nacional_opt.geojson error", e));
 
             layers.nacional.addTo(map);
 
@@ -1632,7 +1710,7 @@
         let municipalGeoJSON = null;
 
 
-        fetch('Municipal.geojson')
+        fetch('Municipal_opt.geojson')
             .then(r => r.json())
             .then(data => {
                 municipalGeoJSON = data;
@@ -1756,7 +1834,7 @@
                 // Filtro de servicios removido por limpieza de código (funcionalidad no activa en sidebar actualmente)
             } else {
 
-                fetch('Municipal.geojson').then(r => r.json()).then(data => {
+                fetch('Municipal_opt.geojson').then(r => r.json()).then(data => {
                     const f = data.features.find(ff => ff.properties.CVEGEO === cve);
                     if (!f) return;
                     highlightLayer.addData(f);
@@ -1824,7 +1902,7 @@
         }
 
 
-        fetch('Nacional.geojson').then(r => r.json()).then(data => {
+        fetch('Nacional_opt.geojson').then(r => r.json()).then(data => {
             const l = L.geoJSON(data);
             map.fitBounds(l.getBounds(), { padding: [30, 30] });
         }).catch(e => console.warn("Error loading initial bounds", e));
@@ -2207,11 +2285,28 @@
             markerModeActive = !markerModeActive;
             const btn = document.getElementById('marker-mode-toggle');
             if (markerModeActive) {
+                // Limpiar cualquier resaltado de municipio o polígono nacional que estorbe la visual
+                try { highlightLayer.clearLayers(); } catch (e) { }
+                if (highlightLabel) { try { map.removeLayer(highlightLabel); } catch (e) { }; highlightLabel = null; }
+
+                // Si la capa de municipios está activa, bajamos su opacidad para que no estorbe la selección del punto
+                if (map.hasLayer(layers.municipios)) {
+                    layers.municipios.setStyle({ fillOpacity: 0.05, weight: 0.5 });
+                }
+
+                // Cerrar cualquier popup abierto para limpiar la vista
+                map.closePopup();
+
                 btn.classList.add('active');
                 btn.querySelector('span').textContent = 'Modo Activo - Haz clic en el mapa';
                 map.getContainer().style.cursor = 'crosshair';
                 map.on('click', onMapClickForMarker);
             } else {
+                // Restaurar estilo normal al desactivar
+                if (map.hasLayer(layers.municipios)) {
+                    layers.municipios.setStyle({ fillOpacity: 0.18, weight: 1 });
+                }
+
                 btn.classList.remove('active');
                 btn.querySelector('span').textContent = 'Marcar Puntos Personalizados';
                 map.getContainer().style.cursor = '';
@@ -2308,19 +2403,39 @@
 
                 const userRole = localStorage.getItem('sig_role');
                 const container = document.createElement('div');
-                container.style.minWidth = "220px";
+                container.style.minWidth = "250px";
                 container.innerHTML = `
-                    <h3 style="color: ${color}; font-weight: bold; margin-bottom: 8px; font-size: 15px;">${point.name}</h3>
+                    <h3 style="color: ${color}; font-weight: bold; margin-bottom: 8px; font-size: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom:4px;">${point.name}</h3>
                     <div style="font-size: 12px; color: rgba(255,255,255,0.9);">
-                        ${point.image_url ? `<img src="${point.image_url}" class="w-full h-32 object-cover rounded-lg mb-3 border border-white/20 shadow-lg">` : ''}
+                        ${point.image_url ? `<img src="${point.image_url}" class="w-full h-32 object-cover rounded-lg mb-3 border border-white/20 shadow-lg cursor-pointer" onclick="window.open('${point.image_url}', '_blank')">` : ''}
                         <p><strong>Categoría:</strong> ${getCategoryLabel(point.category)}</p>
                         ${point.address ? `<p><strong>Dirección:</strong> ${point.address}</p>` : ''}
-                        <p style="font-size: 10px; opacity: 0.7;">Lat: ${point.lat.toFixed(6)}, Lng: ${point.lng.toFixed(6)}</p>
-                        <div style="display: flex; gap: 8px; margin-top: 8px;">
+                        
+                        
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px; padding: 8px 0; border-top: 1px solid rgba(255,255,255,0.1);">
+                            <button onclick="likePoint(${point.id}, this)" class="social-btn ${localStorage.getItem('liked_' + point.id) ? 'liked' : ''}">
+                                <i class="fas fa-heart"></i> <span class="like-count">${point.likes || 0}</span>
+                            </button>
+                            <button onclick="toggleComments(${point.id})" class="social-btn">
+                                <i class="fas fa-comment"></i> Comentarios
+                            </button>
+                        </div>
+
+                        <div id="comments-section-${point.id}" class="hidden" style="margin-top:10px;">
+                            <div id="comments-list-${point.id}" style="max-height: 120px; overflow-y: auto; font-size: 10px; background: rgba(0,0,0,0.2); border-radius: 8px; padding: 6px;">
+                                <p style="opacity: 0.5; text-align: center;">Cargando comentarios...</p>
+                            </div>
+                            <div style="display: flex; gap: 4px; margin-top: 6px;">
+                                <input type="text" id="comment-input-${point.id}" placeholder="Escribe un comentario..." style="flex:1; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; padding: 4px; color: white; font-size: 10px;">
+                                <button onclick="sendComment(${point.id})" style="background: #F6C453; color: #1e3c72; border: none; padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: bold;">➡️</button>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; gap: 8px; margin-top: 12px;">
                             ${(authToken && userRole === 'admin') ? `
-                            <button onclick="editCustomPoint(${point.id})" style="flex:1; padding:4px; border-radius:4px; background:#F6C453; color:#1e3c72; border:none; cursor:pointer; font-weight:600;">Editar</button>
-                            <button onclick="window.deleteCustomPoint(${point.id})" style="flex:1; padding:4px; border-radius:4px; background:#ef4444; color:white; border:none; cursor:pointer; font-weight:600;">Borrar</button>
-                            ` : (authToken ? '<p style="font-size:10px; opacity:0.6; text-align:center; width:100%;">Solo el administrador puede editar o borrar</p>' : '<p style="font-size:10px; opacity:0.6; text-align:center; width:100%;">Inicia sesión para proponer puntos</p>')}
+                            <button onclick="editCustomPoint(${point.id})" style="flex:1; padding:4px; border-radius:4px; background:#F6C453; color:#1e3c72; border:none; cursor:pointer; font-weight:600; font-size: 11px;">Editar</button>
+                            <button onclick="window.deleteCustomPoint(${point.id})" style="flex:1; padding:4px; border-radius:4px; background:#ef4444; color:white; border:none; cursor:pointer; font-weight:600; font-size: 11px;">Borrar</button>
+                            ` : (authToken ? '<p style="font-size:10px; opacity:0.6; text-align:center; width:100%;">Solo el administrador puede editar o borrar</p>' : '<p style="font-size:10px; opacity:0.6; text-align:center; width:100%;">Inicia sesión para interactuar</p>')}
                         </div>
                     </div>
                 `;
@@ -2358,6 +2473,99 @@
                 }
             }
         };
+
+        async function likePoint(id, btn) {
+            if (!authToken) { showNotification('Inicia sesión para dar Like ❤️', 'info'); return; }
+            if (localStorage.getItem('liked_' + id)) { showNotification('Ya te gusta este punto.', 'info'); return; }
+
+            try {
+                const res = await fetchWithAuth(`/api/v1/points/${id}/like`, { method: 'POST' });
+                if (res.ok) {
+                    const countSpan = btn.querySelector('.like-count');
+                    countSpan.textContent = parseInt(countSpan.textContent) + 1;
+                    btn.classList.add('liked');
+                    localStorage.setItem('liked_' + id, 'true');
+                    showNotification('¡Te gusta este punto!', 'success');
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        async function toggleComments(id) {
+            const section = document.getElementById(`comments-section-${id}`);
+            section.classList.toggle('hidden');
+            if (!section.classList.contains('hidden')) {
+                loadComments(id);
+            }
+        }
+
+        async function loadComments(id) {
+            const list = document.getElementById(`comments-list-${id}`);
+            try {
+                const res = await fetch(`/api/v1/points/${id}/comments`);
+                const data = await res.json();
+                if (data.length === 0) {
+                    list.innerHTML = '<p style="opacity:0.4; text-align:center; padding:10px;">Sin comentarios aún.</p>';
+                    return;
+                }
+                list.innerHTML = data.map(c => `
+                    <div class="comment-item" style="margin-bottom:6px; background:rgba(255,255,255,0.05); padding:6px; border-radius:5px;">
+                        <b style="color:#F6C453; font-size:9px;">${c.user_name}:</b>
+                        <span style="font-size:10px;">${c.content}</span>
+                        <div style="font-size:8px; opacity:0.4; margin-top:2px;">${new Date(c.timestamp).toLocaleString()}</div>
+                    </div>
+                `).join('');
+            } catch (e) { list.innerHTML = 'Error al cargar.'; }
+        }
+
+        async function sendComment(id) {
+            if (!authToken) { showNotification('Inicia sesión para comentar 💬', 'info'); return; }
+            const input = document.getElementById(`comment-input-${id}`);
+            const content = input.value.trim();
+            if (!content) return;
+
+            try {
+                const res = await fetchWithAuth(`/api/v1/points/${id}/comments`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ content })
+                });
+                if (res.ok) {
+                    input.value = '';
+                    loadComments(id);
+                    showNotification('Comentario enviado.', 'success');
+                }
+            } catch (e) { showNotification('Error al enviar comentario.', 'error'); }
+        }
+
+        async function handleFileUpload(input) {
+            if (!input.files || !input.files[0]) return;
+            const status = document.getElementById('upload-status');
+            status.textContent = 'Subiendo imagen...';
+            status.style.color = '#F6C453';
+
+            const formData = new FormData();
+            formData.append('file', input.files[0]);
+
+            try {
+                const res = await fetchWithAuth('/api/v1/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    document.getElementById('point-image').value = data.url;
+                    status.textContent = '✅ Subida con éxito';
+                    status.style.color = '#10b981';
+                    showNotification('Imagen cargada correctamente.', 'success');
+                } else {
+                    status.textContent = '❌ Error al subir';
+                    status.style.color = '#ef4444';
+                }
+            } catch (e) {
+                status.textContent = '❌ Error de conexión';
+                status.style.color = '#ef4444';
+            }
+        }
 
         function editCustomPoint(pointId) {
             const point = customPoints.find(p => String(p.id) === String(pointId));
@@ -2441,7 +2649,7 @@
 
                     updateAuthUI();
                     closeLoginModal();
-                    showNotification(`¡Hola, ${currentUser}! Bienvenido al SIG Premium.`, 'success');
+                    showNotification(`¡Hola, ${currentUser}! Bienvenido al SIG.`, 'success');
                     loadCustomPointsFromServer();
                 } else {
                     const error = await response.json();
@@ -2630,7 +2838,7 @@
                 tabRegister.className = 'flex-1 py-3 font-bold text-white/40 border-b-2 border-transparent';
                 regFields.classList.add('hidden');
             } else {
-                title.textContent = 'Crear Perfil SIG Premium';
+                title.textContent = 'Crear Perfil SIG';
                 submitBtn.textContent = 'COMPLETAR REGISTRO';
                 tabLogin.className = 'flex-1 py-3 font-bold text-white/40 border-b-2 border-transparent';
                 tabRegister.className = 'flex-1 py-3 font-bold text-[#F6C453] border-b-2 border-[#F6C453] bg-white/5';
@@ -2703,7 +2911,7 @@
                 });
 
                 if (response.ok) {
-                    showNotification('¡Cuenta Premium creada! Ahora inicia sesión.', 'success');
+                    showNotification('¡Cuenta creada! Ahora inicia sesión.', 'success');
                     setAuthMode('login');
                 } else {
                     const error = await response.json();
@@ -2722,7 +2930,7 @@
         };
     </script>
 
-    <!-- Modal de Login / Registro Premium -->
+    <!-- Modal de Login / Registro -->
     <div id="login-modal">
         <div class="login-card" style="max-width: 450px;">
             <!-- Selector de modo -->

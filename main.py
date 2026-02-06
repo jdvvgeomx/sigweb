@@ -12,6 +12,10 @@ import sqlite3
 import json
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
+from fastapi.middleware.gzip import GZipMiddleware
+from fastapi import File, UploadFile
+import uuid
+import shutil
 
 # --- CONFIGURACIÓN DE SEGURIDAD ---
 SECRET_KEY = os.environ.get("SECRET_KEY", "uveracruzana_super_secret_key_2026")
@@ -22,7 +26,13 @@ GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", "481357191308-c06t135ahrb8
 pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/v1/auth/login")
 
-app = FastAPI(title="Servidor SIG Web Profesional")
+app = FastAPI(title="SIG Web")
+app.add_middleware(GZipMiddleware, minimum_size=1000)
+
+# --- CARPETA DE UPLOADS ---
+UPLOAD_DIR = "static/uploads"
+if not os.path.exists(UPLOAD_DIR):
+    os.makedirs(UPLOAD_DIR)
 
 # --- BASE DE DATOS ---
 DB_PATH = "sig_database.db"
@@ -46,12 +56,35 @@ def init_db():
             timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
         )
     ''')
-    
-    # Intentar agregar columna image_url si no existe (Migración simple)
+    # Intentar agregar columnas si la tabla ya existía sin ellas
     try:
-        cursor.execute('ALTER TABLE points ADD COLUMN image_url TEXT')
+        cursor.execute('ALTER TABLE points ADD COLUMN timestamp DATETIME DEFAULT CURRENT_TIMESTAMP')
     except:
-        pass # Ya existe
+        pass # Ya existe o error al agregar
+        
+    # Columna likes si no existe
+    try:
+        cursor.execute('ALTER TABLE points ADD COLUMN likes INTEGER DEFAULT 0')
+    except:
+        pass
+
+    # Columnas de auditoría si no existen
+    try:
+        cursor.execute('ALTER TABLE points ADD COLUMN created_by TEXT')
+        cursor.execute('ALTER TABLE points ADD COLUMN created_by_name TEXT')
+    except:
+        pass
+
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS comments (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            point_id INTEGER,
+            user_name TEXT,
+            content TEXT,
+            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (point_id) REFERENCES points(id)
+        )
+    ''')
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -67,7 +100,7 @@ def init_db():
     # Admin por defecto
     admin_pass = pwd_context.hash("uv2026")
     cursor.execute('''
-        INSERT INTO users (username, password, full_name, email, university, role) 
+        INSERT OR IGNORE INTO users (username, password, full_name, email, university, role) 
         VALUES (?, ?, ?, ?, ?, ?)
     ''', ('admin', admin_pass, 'Administrador SIG', 'admin@uv.mx', 'Universidad Veracruzana', 'admin'))
     
@@ -86,6 +119,10 @@ class Point(BaseModel):
     lat: float
     lng: float
     image_url: Optional[str] = None
+    likes: Optional[int] = 0
+
+class CommentCreate(BaseModel):
+    content: str = Field(..., max_length=300)
 
 class UserCreate(BaseModel):
     username: str
@@ -144,21 +181,93 @@ async def get_points():
     conn.close()
     return [dict(row) for row in rows]
 
+# --- NUEVOS ENDPOINTS SOCIALES ---
+
+@app.post("/api/v1/points/{point_id}/like")
+async def like_point(point_id: int, current_user: dict = Depends(get_current_user)):
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute('UPDATE points SET likes = likes + 1 WHERE id = ?', (point_id,))
+    conn.commit()
+    conn.close()
+    return {"status": "success"}
+
+@app.post("/api/v1/points/{point_id}/comments")
+async def add_comment(point_id: int, comment: CommentCreate, current_user: dict = Depends(get_current_user)):
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute('''
+        INSERT INTO comments (point_id, user_name, content) 
+        VALUES (?, ?, ?)
+    ''', (point_id, current_user['full_name'], comment.content))
+    conn.commit()
+    conn.close()
+    return {"status": "success"}
+
+@app.get("/api/v1/points/{point_id}/comments")
+async def get_comments(point_id: int):
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM comments WHERE point_id = ? ORDER BY timestamp DESC', (point_id,))
+    rows = cursor.fetchall()
+    conn.close()
+    return [dict(row) for row in rows]
+
+@app.post("/api/v1/upload")
+async def upload_image(file: UploadFile = File(...), current_user: dict = Depends(get_current_user)):
+    # Generar nombre único para evitar colisiones
+    ext = file.filename.split(".")[-1]
+    filename = f"{uuid.uuid4()}.{ext}"
+    file_path = os.path.join(UPLOAD_DIR, filename)
+    
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+        
+    return {"url": f"/uploads/{filename}"}
+
 @app.post("/api/v1/points")
 async def save_point(point: Point, current_user: dict = Depends(get_current_user)):
     try:
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
         cursor.execute('''
-            INSERT INTO points (name, category, subcategory, description, address, lat, lng, image_url)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        ''', (point.name, point.category, point.subcategory, point.description, point.address, point.lat, point.lng, point.image_url))
+            INSERT INTO points (name, category, subcategory, description, address, lat, lng, image_url, created_by, created_by_name)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ''', (point.name, point.category, point.subcategory, point.description, point.address, point.lat, point.lng, point.image_url, current_user['username'], current_user['full_name']))
         conn.commit()
         point_id = cursor.lastrowid
         conn.close()
         return {"status": "success", "id": point_id}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+# --- ENDPOINT DE ESTADÍSTICAS / INFORMES ---
+
+@app.get("/api/v1/admin/stats")
+async def get_stats(current_user: dict = Depends(get_current_user)):
+    if current_user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Acceso denegado")
+        
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+    
+    # Agrupar por usuario y fecha (solo el día)
+    query = '''
+        SELECT 
+            created_by_name as usuario,
+            DATE(timestamp) as fecha,
+            COUNT(*) as total_puntos,
+            GROUP_CONCAT(name, ', ') as nombres_puntos
+        FROM points 
+        GROUP BY created_by, DATE(timestamp)
+        ORDER BY fecha DESC, usuario ASC
+    '''
+    cursor.execute(query)
+    rows = cursor.fetchall()
+    conn.close()
+    return [dict(row) for row in rows]
 
 @app.delete("/api/v1/points/{point_id}")
 async def delete_point(point_id: int, current_user: dict = Depends(get_current_user)):
@@ -288,9 +397,7 @@ async def obtener_rutas():
     return {"status": "success", "count": len(files), "files": files}
 
 # Montamos la carpeta static
-# Inicializamos la BD al arrancar
-init_db()
-
+app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 app.mount("/", StaticFiles(directory="static", html=True), name="static")
 
 if __name__ == "__main__":
