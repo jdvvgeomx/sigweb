@@ -1209,33 +1209,48 @@
         }
 
 
-        function actualizarLeyenda(tipo) {
+        function actualizarLeyenda(tipo, data = null) {
             const node = document.getElementById('map-legend');
+            let content = "";
+            let p = data;
+
             if (tipo === 'nacional') {
-                node.innerHTML = `<b>Nacional</b><br><span class="legend-color-box" style="background:black"></span> Polígono Nacional`;
-                return;
-            }
-            if (tipo === 'estatal') {
-                node.innerHTML = `<b>Estatal</b><br><span class="legend-color-box" style="background:#006847"></span> Veracruz`;
-                return;
-            }
-            if (tipo === 'municipios') {
-                node.innerHTML = `<b>Municipios</b><br><span class="legend-color-box" style="background:#006847"></span> Límite municipal`;
-                return;
-            }
-            if (tipo === 'regiones_uv') {
-                node.innerHTML = `<b>Regiones UV</b><br>`;
+                content = `<b>Nacional</b><br><span class="legend-color-box" style="background:black"></span> Polígono Nacional`;
+                if (!p && typeof poblacion !== 'undefined') p = poblacion.nacional;
+            } else if (tipo === 'estatal') {
+                content = `<b>Estatal</b><br><span class="legend-color-box" style="background:#006847"></span> Veracruz`;
+                if (!p && typeof poblacion !== 'undefined') p = poblacion.veracruz;
+            } else if (tipo === 'municipios') {
+                content = `<b>Municipios</b><br><span class="legend-color-box" style="background:#006847"></span> Límite municipal`;
+            } else if (tipo === 'regiones_uv') {
+                content = `<b>Regiones UV</b><br>`;
                 const uvColors = {
-                    'Poza Rica-Tuxpan': '#F59E0B', // Ámbar
-                    'Xalapa': '#3B82F6',           // Azul
-                    'Veracruz': '#EF4444',         // Rojo
-                    'Orizaba-Córdoba': '#10B981',  // Verde
-                    'Coatzacoalcos-Minatitlán': '#8B5CF6' // Morado
+                    'Poza Rica-Tuxpan': '#F59E0B',
+                    'Xalapa': '#3B82F6',
+                    'Veracruz': '#EF4444',
+                    'Orizaba-Córdoba': '#10B981',
+                    'Coatzacoalcos-Minatitlán': '#8B5CF6'
                 };
                 Object.keys(uvColors).forEach(k => {
-                    node.innerHTML += `<div style="margin-top:6px"><span class="legend-color-box" style="background:${uvColors[k]}"></span> ${k}</div>`;
+                    content += `<div style="margin-top:6px"><span class="legend-color-box" style="background:${uvColors[k]}"></span> ${k}</div>`;
                 });
             }
+
+            if (p && p.POB1) {
+                const nombre = p.NOMGEO || (tipo === 'estatal' ? 'Veracruz' : 'México');
+                content += `
+                    <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 10px; line-height: 1.4; opacity: 0.9;">
+                        <div style="color:#F6C453; font-weight:bold; margin-bottom:4px; text-transform:uppercase;">${nombre}</div>
+                        poblacion total: <b style="color:#fff">${p.POB1.toLocaleString()}</b><br>
+                        poblacion hombres: <b style="color:#3B82F6">${(p.POB84 || 0).toLocaleString()}</b><br>
+                        poblacion mujeres: <b style="color:#F472B6">${(p.POB42 || 0).toLocaleString()}</b>
+                    </div>
+                `;
+            } else if (tipo === 'municipios' && !p) {
+                content += `<div style="margin-top:8px; font-size:9px; opacity:0.6;">(Selecciona un municipio para ver población)</div>`;
+            }
+
+            node.innerHTML = content;
         }
 
 
@@ -1849,6 +1864,7 @@
             _oldMostrar(cve, nombre);
 
             const p = poblacion.municipios.find(x => x.NOMGEO === nombre);
+            actualizarLeyenda('municipios', p);
 
             if (p) {
                 const panel = document.getElementById('info-content');
