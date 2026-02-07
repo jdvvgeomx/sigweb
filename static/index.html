@@ -2891,16 +2891,19 @@
             }
         }
 
-        window.onload = function () {
-            google.accounts.id.initialize({
-                client_id: "481357191308-c06t135ahrb8nnk1vq6nfo0bcqn33cdl.apps.googleusercontent.com", // ID Real de Google
-                callback: handleGoogleLogin
-            });
-            google.accounts.id.renderButton(
-                document.getElementById("google-btn"),
-                { theme: "outline", size: "large", width: "100%", text: "continue_with" }
-            );
-        };
+        // Función para inicializar Google (se llamará desde el onload principal)
+        function initGoogleAuth() {
+            if (typeof google !== 'undefined') {
+                google.accounts.id.initialize({
+                    client_id: "481357191308-c06t135ahrb8nnk1vq6nfo0bcqn33cdl.apps.googleusercontent.com",
+                    callback: handleGoogleLogin
+                });
+                google.accounts.id.renderButton(
+                    document.getElementById("google-btn"),
+                    { theme: "outline", size: "large", width: "386", text: "continue_with" }
+                );
+            }
+        }
 
         async function register(username, password, full_name, email, university) {
             try {
@@ -2927,6 +2930,7 @@
             if (authForm) authForm.onsubmit = handleAuth;
             updateAuthUI();
             loadCustomPointsFromServer();
+            initGoogleAuth(); // Inicializar Google aquí
         };
     </script>
 
@@ -2982,13 +2986,14 @@
 
             <!-- Divisor para Google -->
             <div id="google-login-section">
-                <div class="flex items-center gap-3 my-6 opacity-30">
-                    <div class="h-px bg-white flex-1"></div>
-                    <span class="text-[10px] font-bold">O CONTINÚAR CON</span>
-                    <div class="h-px bg-white flex-1"></div>
+                <div class="flex items-center gap-3 my-6">
+                    <div class="h-px bg-white/20 flex-1"></div>
+                    <span class="text-[10px] font-bold text-white/40">O CONTINUAR CON</span>
+                    <div class="h-px bg-white/20 flex-1"></div>
                 </div>
 
-                <div id="google-btn" class="w-full flex justify-center"></div>
+                <div id="google-btn"
+                    style="min-height: 40px; display: flex; justify-items: center; justify-content: center;"></div>
             </div>
 
             <button onclick="closeLoginModal()"
