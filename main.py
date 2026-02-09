@@ -295,8 +295,17 @@ async def delete_point(point_id: int, current_user: dict = Depends(get_current_u
 
 # --- RUTAS DE AUTENTICACIÓN ---
 
+def is_uv_email(email: str) -> bool:
+    email = email.lower().strip()
+    return email.endswith("@uv.mx") or email.endswith("@estudiantes.uv.mx")
+
 @app.post("/api/v1/auth/register")
 async def register(user: UserCreate):
+    if not is_uv_email(user.email):
+        raise HTTPException(
+            status_code=400, 
+            detail="Solo se permiten correos institucionales de la UV (@uv.mx o @estudiantes.uv.mx)"
+        )
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     hashed_pass = pwd_context.hash(user.password)
@@ -353,6 +362,13 @@ async def google_login(token_data: dict):
         
         # El token es válido, extraemos la info
         email = idinfo['email']
+
+        if not is_uv_email(email):
+            raise HTTPException(
+                status_code=403, 
+                detail="Acceso denegado: Tu cuenta de Google no pertenece a la Universidad Veracruzana"
+            )
+
         name = idinfo.get('name', email.split('@')[0])
         picture = idinfo.get('picture')
         
