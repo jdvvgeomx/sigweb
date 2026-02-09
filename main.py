@@ -79,26 +79,14 @@ def init_db():
                 image_url TEXT,
                 timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
+                timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                likes INTEGER DEFAULT 0,
+                created_by TEXT,
+                created_by_name TEXT
+            )
         ''')
-        # Intentar agregar columnas si la tabla ya existía sin ellas
-        try:
-            cursor.execute('ALTER TABLE points ADD COLUMN timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP')
-        except:
-            pass # Ya existe o error al agregar
-            
-        # Columna likes si no existe
-        try:
-            cursor.execute('ALTER TABLE points ADD COLUMN likes INTEGER DEFAULT 0')
-        except:
-            pass
-
-        # Columnas de auditoría si no existen
-        try:
-            cursor.execute('ALTER TABLE points ADD COLUMN created_by TEXT')
-            cursor.execute('ALTER TABLE points ADD COLUMN created_by_name TEXT')
-        except:
-            pass
-
+        
+        # Tabla de Comentarios
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS comments (
                 id SERIAL PRIMARY KEY,
@@ -106,9 +94,11 @@ def init_db():
                 user_name TEXT,
                 content TEXT,
                 timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (point_id) REFERENCES points(id)
+                CONSTRAINT fk_point FOREIGN KEY (point_id) REFERENCES points(id) ON DELETE CASCADE
             )
         ''')
+        
+        # Tabla de Usuarios
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS users (
                 id SERIAL PRIMARY KEY,
@@ -121,6 +111,7 @@ def init_db():
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         ''')
+        
         # Admin por defecto
         admin_pass = pwd_context.hash("uv2026")
         cursor.execute('''
@@ -132,8 +123,9 @@ def init_db():
         conn.commit()
         cursor.close()
         conn.close()
+        print("Base de datos inicializada correctamente en Supabase.")
     except Exception as e:
-        print(f"Error inicializando base de datos: {e}")
+        print(f"Error crítico inicializando base de datos: {e}")
 
 init_db()
 
