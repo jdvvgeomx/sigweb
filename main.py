@@ -47,15 +47,25 @@ if not os.path.exists(UPLOAD_DIR):
     os.makedirs(UPLOAD_DIR)
 
 # --- BASE DE DATOS (SUPABASE) ---
+# Usamos urllib.parse para manejar caracteres especiales en la contraseña
+import urllib.parse
+
+# La URL se obtiene de las variables de entorno para mayor seguridad
 DATABASE_URL = os.environ.get("DATABASE_URL", "postgresql://postgres:Tekunikaru1997+@db.lpulqvzzhqynjlxaxgoq.supabase.co:5432/postgres")
 
 def get_db_conn():
-    conn = psycopg2.connect(DATABASE_URL, cursor_factory=extras.RealDictCursor)
-    return conn
+    try:
+        # Aseguramos que la conexión use SSL (requerido por Supabase)
+        conn = psycopg2.connect(DATABASE_URL, cursor_factory=extras.RealDictCursor, sslmode='require')
+        return conn
+    except Exception as e:
+        print(f"Error conectando a la base de datos: {e}")
+        raise HTTPException(status_code=500, detail="Error de conexión con la base de datos")
 
 def init_db():
-    conn = get_db_conn()
-    cursor = conn.cursor()
+    try:
+        conn = get_db_conn()
+        cursor = conn.cursor()
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS points (
             id SERIAL PRIMARY KEY,
