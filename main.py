@@ -205,6 +205,8 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
 @app.get("/api/v1/points")
 async def get_points():
     conn = get_db_conn()
+    if not conn:
+        return []
     cursor = conn.cursor()
     cursor.execute('SELECT * FROM points')
     rows = cursor.fetchall()
