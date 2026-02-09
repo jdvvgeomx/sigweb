@@ -7,3 +7,4 @@ python-jose[cryptography]
 python-dotenv
 google-auth
 requests
+psycopg2-binary

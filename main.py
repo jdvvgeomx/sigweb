@@ -8,7 +8,8 @@ from datetime import datetime, timedelta
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 import os
-import sqlite3
+import psycopg2
+from psycopg2 import extras
 import json
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
@@ -45,17 +46,19 @@ UPLOAD_DIR = "static/uploads"
 if not os.path.exists(UPLOAD_DIR):
     os.makedirs(UPLOAD_DIR)
 
-# --- BASE DE DATOS ---
-DB_PATH = "sig_database.db"
+# --- BASE DE DATOS (SUPABASE) ---
+DATABASE_URL = os.environ.get("DATABASE_URL", "postgresql://postgres:Tekunikaru1997+@db.lpulqvzzhqynjlxaxgoq.supabase.co:5432/postgres")
+
+def get_db_conn():
+    conn = psycopg2.connect(DATABASE_URL, cursor_factory=extras.RealDictCursor)
+    return conn
 
 def init_db():
-    conn = sqlite3.connect(DB_PATH)
+    conn = get_db_conn()
     cursor = conn.cursor()
-    # cursor.execute('DROP TABLE IF EXISTS users') # COMENTADO PARA PRODUCCIÓN: No borrar usuarios al reiniciar
-    # cursor.execute('DROP TABLE IF EXISTS points') # Comentado para no perder datos
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS points (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id SERIAL PRIMARY KEY,
             name TEXT NOT NULL,
             category TEXT,
             subcategory TEXT,
@@ -98,24 +101,26 @@ def init_db():
     ''')
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id SERIAL PRIMARY KEY,
             username TEXT UNIQUE NOT NULL,
             password TEXT NOT NULL,
             full_name TEXT,
             email TEXT,
             university TEXT,
             role TEXT DEFAULT 'user',
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     ''')
     # Admin por defecto
     admin_pass = pwd_context.hash("uv2026")
     cursor.execute('''
-        INSERT OR IGNORE INTO users (username, password, full_name, email, university, role) 
-        VALUES (?, ?, ?, ?, ?, ?)
+        INSERT INTO users (username, password, full_name, email, university, role) 
+        VALUES (%s, %s, %s, %s, %s, %s)
+        ON CONFLICT (username) DO NOTHING
     ''', ('admin', admin_pass, 'Administrador SIG', 'admin@uv.mx', 'Universidad Veracruzana', 'admin'))
     
     conn.commit()
+    cursor.close()
     conn.close()
 
 init_db()
@@ -166,11 +171,11 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
             raise credentials_exception
             
         # Buscar usuario en BD para obtener su rol actualizado
-        conn = sqlite3.connect(DB_PATH)
-        conn.row_factory = sqlite3.Row
+        conn = get_db_conn()
         cursor = conn.cursor()
-        cursor.execute('SELECT * FROM users WHERE username = ?', (username,))
+        cursor.execute('SELECT * FROM users WHERE username = %s', (username,))
         user = cursor.fetchone()
+        cursor.close()
         conn.close()
         
         if user is None:
@@ -184,11 +189,11 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
 
 @app.get("/api/v1/points")
 async def get_points():
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
+    conn = get_db_conn()
     cursor = conn.cursor()
     cursor.execute('SELECT * FROM points')
     rows = cursor.fetchall()
+    cursor.close()
     conn.close()
     return [dict(row) for row in rows]
 
@@ -196,32 +201,34 @@ async def get_points():
 
 @app.post("/api/v1/points/{point_id}/like")
 async def like_point(point_id: int, current_user: dict = Depends(get_current_user)):
-    conn = sqlite3.connect(DB_PATH)
+    conn = get_db_conn()
     cursor = conn.cursor()
-    cursor.execute('UPDATE points SET likes = likes + 1 WHERE id = ?', (point_id,))
+    cursor.execute('UPDATE points SET likes = likes + 1 WHERE id = %s', (point_id,))
     conn.commit()
+    cursor.close()
     conn.close()
     return {"status": "success"}
 
 @app.post("/api/v1/points/{point_id}/comments")
 async def add_comment(point_id: int, comment: CommentCreate, current_user: dict = Depends(get_current_user)):
-    conn = sqlite3.connect(DB_PATH)
+    conn = get_db_conn()
     cursor = conn.cursor()
     cursor.execute('''
         INSERT INTO comments (point_id, user_name, content) 
-        VALUES (?, ?, ?)
+        VALUES (%s, %s, %s)
     ''', (point_id, current_user['full_name'], comment.content))
     conn.commit()
+    cursor.close()
     conn.close()
     return {"status": "success"}
 
 @app.get("/api/v1/points/{point_id}/comments")
 async def get_comments(point_id: int):
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
+    conn = get_db_conn()
     cursor = conn.cursor()
-    cursor.execute('SELECT * FROM comments WHERE point_id = ? ORDER BY timestamp DESC', (point_id,))
+    cursor.execute('SELECT * FROM comments WHERE point_id = %s ORDER BY timestamp DESC', (point_id,))
     rows = cursor.fetchall()
+    cursor.close()
     conn.close()
     return [dict(row) for row in rows]
 
@@ -240,14 +247,16 @@ async def upload_image(file: UploadFile = File(...), current_user: dict = Depend
 @app.post("/api/v1/points")
 async def save_point(point: Point, current_user: dict = Depends(get_current_user)):
     try:
-        conn = sqlite3.connect(DB_PATH)
+        conn = get_db_conn()
         cursor = conn.cursor()
         cursor.execute('''
             INSERT INTO points (name, category, subcategory, description, address, lat, lng, image_url, created_by, created_by_name)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            RETURNING id
         ''', (point.name, point.category, point.subcategory, point.description, point.address, point.lat, point.lng, point.image_url, current_user['username'], current_user['full_name']))
         conn.commit()
-        point_id = cursor.lastrowid
+        point_id = cursor.fetchone()['id']
+        cursor.close()
         conn.close()
         return {"status": "success", "id": point_id}
     except Exception as e:
@@ -260,23 +269,23 @@ async def get_stats(current_user: dict = Depends(get_current_user)):
     if current_user.get("role") != "admin":
         raise HTTPException(status_code=403, detail="Acceso denegado")
         
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
+    conn = get_db_conn()
     cursor = conn.cursor()
     
     # Agrupar por usuario y fecha (solo el día)
     query = '''
         SELECT 
             created_by_name as usuario,
-            DATE(timestamp) as fecha,
+            timestamp::date as fecha,
             COUNT(*) as total_puntos,
-            GROUP_CONCAT(name, ', ') as nombres_puntos
+            STRING_AGG(name, ', ') as nombres_puntos
         FROM points 
-        GROUP BY created_by, DATE(timestamp)
+        GROUP BY created_by_name, created_by, timestamp::date
         ORDER BY fecha DESC, usuario ASC
     '''
     cursor.execute(query)
     rows = cursor.fetchall()
+    cursor.close()
     conn.close()
     return [dict(row) for row in rows]
 
@@ -286,10 +295,11 @@ async def delete_point(point_id: int, current_user: dict = Depends(get_current_u
     if current_user.get("role") != "admin":
         raise HTTPException(status_code=403, detail="No tienes permisos para eliminar puntos. Solo el administrador puede realizar esta acción.")
         
-    conn = sqlite3.connect(DB_PATH)
+    conn = get_db_conn()
     cursor = conn.cursor()
-    cursor.execute('DELETE FROM points WHERE id = ?', (point_id,))
+    cursor.execute('DELETE FROM points WHERE id = %s', (point_id,))
     conn.commit()
+    cursor.close()
     conn.close()
     return {"status": "success"}
 
@@ -306,28 +316,29 @@ async def register(user: UserCreate):
             status_code=400, 
             detail="Solo se permiten correos institucionales de la UV (@uv.mx o @estudiantes.uv.mx)"
         )
-    conn = sqlite3.connect(DB_PATH)
+    conn = get_db_conn()
     cursor = conn.cursor()
     hashed_pass = pwd_context.hash(user.password)
     try:
         cursor.execute('''
             INSERT INTO users (username, password, full_name, email, university) 
-            VALUES (?, ?, ?, ?, ?)
+            VALUES (%s, %s, %s, %s, %s)
         ''', (user.username, hashed_pass, user.full_name, user.email, user.university))
         conn.commit()
         return {"status": "success", "message": "Usuario registrado"}
-    except sqlite3.IntegrityError:
+    except psycopg2.IntegrityError:
         raise HTTPException(status_code=400, detail="El usuario ya existe")
     finally:
+        cursor.close()
         conn.close()
 
 @app.post("/api/v1/auth/login", response_model=Token)
 async def login(form_data: OAuth2PasswordRequestForm = Depends()):
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
+    conn = get_db_conn()
     cursor = conn.cursor()
-    cursor.execute('SELECT * FROM users WHERE username = ?', (form_data.username,))
+    cursor.execute('SELECT * FROM users WHERE username = %s', (form_data.username,))
     user = cursor.fetchone()
+    cursor.close()
     conn.close()
     
     if not user or not pwd_context.verify(form_data.password, user['password']):
@@ -373,11 +384,10 @@ async def google_login(token_data: dict):
         picture = idinfo.get('picture')
         
         # Buscar o crear usuario en la BD
-        conn = sqlite3.connect(DB_PATH)
-        conn.row_factory = sqlite3.Row
+        conn = get_db_conn()
         cursor = conn.cursor()
         
-        cursor.execute('SELECT * FROM users WHERE email = ?', (email,))
+        cursor.execute('SELECT * FROM users WHERE email = %s', (email,))
         user = cursor.fetchone()
         
         if not user:
@@ -387,12 +397,13 @@ async def google_login(token_data: dict):
             dummy_pass = pwd_context.hash(os.urandom(16).hex())
             cursor.execute('''
                 INSERT INTO users (username, password, full_name, email, university, role)
-                VALUES (?, ?, ?, ?, ?, ?)
+                VALUES (%s, %s, %s, %s, %s, %s)
             ''', (username, dummy_pass, name, email, 'Google Account', 'user'))
             conn.commit()
-            cursor.execute('SELECT * FROM users WHERE email = ?', (email,))
+            cursor.execute('SELECT * FROM users WHERE email = %s', (email,))
             user = cursor.fetchone()
         
+        cursor.close()
         conn.close()
         
         # Generar nuestro JWT para el sistema
