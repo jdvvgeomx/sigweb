@@ -323,6 +323,8 @@ async def delete_point(point_id: int, current_user: dict = Depends(get_current_u
         raise HTTPException(status_code=403, detail="No tienes permisos para eliminar puntos. Solo el administrador puede realizar esta acción.")
         
     conn = get_db_conn()
+    if not conn:
+        raise HTTPException(status_code=503, detail="Base de datos no disponible")
     cursor = conn.cursor()
     cursor.execute('DELETE FROM points WHERE id = %s', (point_id,))
     conn.commit()
@@ -344,6 +346,8 @@ async def register(user: UserCreate):
             detail="Solo se permiten correos institucionales de la UV (@uv.mx o @estudiantes.uv.mx)"
         )
     conn = get_db_conn()
+    if not conn:
+        raise HTTPException(status_code=503, detail="Base de datos no disponible")
     cursor = conn.cursor()
     hashed_pass = pwd_context.hash(user.password)
     try:
@@ -362,6 +366,8 @@ async def register(user: UserCreate):
 @app.post("/api/v1/auth/login", response_model=Token)
 async def login(form_data: OAuth2PasswordRequestForm = Depends()):
     conn = get_db_conn()
+    if not conn:
+        raise HTTPException(status_code=503, detail="Base de datos no disponible")
     cursor = conn.cursor()
     cursor.execute('SELECT * FROM users WHERE username = %s', (form_data.username,))
     user = cursor.fetchone()
@@ -412,6 +418,8 @@ async def google_login(token_data: dict):
         
         # Buscar o crear usuario en la BD
         conn = get_db_conn()
+        if not conn:
+            raise HTTPException(status_code=503, detail="Base de datos no disponible")
         cursor = conn.cursor()
         
         cursor.execute('SELECT * FROM users WHERE email = %s', (email,))
