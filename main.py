@@ -51,21 +51,25 @@ if not os.path.exists(UPLOAD_DIR):
 import urllib.parse
 
 # La URL se obtiene de las variables de entorno para mayor seguridad
-DATABASE_URL = os.environ.get("DATABASE_URL")
+DATABASE_URL_ENV = os.environ.get("DATABASE_URL")
 
 def get_db_conn():
-    if not DATABASE_URL:
+    if not DATABASE_URL_ENV:
         print("ERROR: La variable DATABASE_URL no está configurada en Render.")
         return None
+    
+    # Limpiamos la URL de posibles espacios o comillas accidentales
+    db_url = DATABASE_URL_ENV.strip().replace('"', '').replace("'", "")
+    
     try:
-        # Debug: Mostrar solo la parte del host y usuario para ver si Render lo lee bien
         from urllib.parse import urlparse
-        parsed = urlparse(DATABASE_URL)
-        print(f"Intentando conectar a: {parsed.hostname} con el usuario: {parsed.username}")
+        parsed = urlparse(db_url)
+        # Debug: Mostrar puerto para verificar que Render leyó el cambio de :6543
+        print(f"DEBUG DB -> Host: {parsed.hostname} | Puerto: {parsed.port or 5432} | Usuario: {parsed.username}")
         
         # Añadimos un tiempo de espera para que no se congele el servidor si falla
         conn = psycopg2.connect(
-            DATABASE_URL, 
+            db_url, 
             cursor_factory=extras.RealDictCursor, 
             sslmode='require',
             connect_timeout=5
