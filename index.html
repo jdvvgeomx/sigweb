@@ -2645,22 +2645,31 @@
 
                     // Ahora guardamos el nombre completo si existe
                     currentUser = (data.user && data.user.full_name) ? data.user.full_name : username;
+                    const role = (data.user && data.user.role) ? data.user.role : 'user';
 
                     localStorage.setItem('sig_token', authToken);
                     localStorage.setItem('sig_user', currentUser);
-                    localStorage.setItem('sig_role', data.user.role || 'user');
+                    localStorage.setItem('sig_role', role);
 
-                    updateAuthUI();
+                    console.log('✅ Login exitoso:', currentUser);
+
+                    // IMPORTANTE: Primero cerramos la ventana para que el usuario no sienta que se trabó
                     closeLoginModal();
-                    showNotification(`¡Hola, ${currentUser}! Bienvenido al SIG.`, 'success');
-                    loadCustomPointsFromServer();
+
+                    try {
+                        updateAuthUI();
+                        showNotification(`¡Hola, ${currentUser}! Bienvenido al SIG.`, 'success');
+                        loadCustomPointsFromServer();
+                    } catch (err) {
+                        console.error('⚠️ Error visual:', err);
+                    }
                 } else {
                     const error = await response.json();
                     showNotification(error.detail || 'Credenciales incorrectas', 'error');
                 }
             } catch (e) {
                 console.error('❌ Error en login:', e);
-                showNotification('Error de conexión', 'error');
+                showNotification('Error de conexión con el servidor', 'error');
             }
         }
 
@@ -2676,56 +2685,48 @@
         }
 
         function updateAuthUI() {
-            const loginBtn = document.getElementById('login-btn');
-            const loggedInView = document.getElementById('user-logged-in');
-            const usernameDisp = document.getElementById('username-display');
-            const markerToggle = document.getElementById('marker-mode-toggle');
+            try {
+                const loginBtn = document.getElementById('login-btn');
+                const loggedInView = document.getElementById('user-logged-in');
 
-            if (authToken) {
-                if (loginBtn) loginBtn.classList.add('hidden');
-                if (loggedInView) {
-                    loggedInView.classList.remove('hidden');
-                    loggedInView.style.display = 'flex';
+                if (authToken) {
+                    if (loginBtn) loginBtn.classList.add('hidden');
+                    if (loggedInView) {
+                        loggedInView.classList.remove('hidden');
+                        loggedInView.style.display = 'flex';
 
-                    const pic = localStorage.getItem('sig_picture');
-                    if (pic) {
-                        loggedInView.innerHTML = `
+                        const pic = localStorage.getItem('sig_picture');
+                        const displayName = currentUser || localStorage.getItem('sig_user') || 'Usuario';
+
+                        loggedInView.innerHTML = pic ? `
                             <img src="${pic}" class="h-8 w-8 rounded-full border-2 border-[#F6C453] shadow-sm">
-                            <span id="username-display" class="text-[10px] md:text-xs font-bold text-[#F6C453]">${currentUser}</span>
+                            <span class="text-[10px] md:text-xs font-bold text-[#F6C453]">${displayName}</span>
                             <button onclick="logout()" class="text-white hover:text-red-400 text-[10px] md:text-xs underline p-1">Salir</button>
-                        `;
-                    } else {
-                        loggedInView.innerHTML = `
+                        ` : `
                             <i class="fas fa-user-circle text-[#F6C453] text-lg"></i>
-                            <span id="username-display" class="text-[10px] md:text-xs font-bold text-[#F6C453]">${currentUser}</span>
+                            <span class="text-[10px] md:text-xs font-bold text-[#F6C453]">${displayName}</span>
                             <button onclick="logout()" class="text-white hover:text-red-400 text-[10px] md:text-xs underline p-1">Salir</button>
                         `;
                     }
+
+                    // Mostrar botón de admin si el rol es privilegiado
+                    const adminBtn = document.getElementById('admin-panel-btn');
+                    const userRole = localStorage.getItem('sig_role');
+                    if (adminBtn) {
+                        if (userRole === 'admin') adminBtn.classList.remove('hidden');
+                        else adminBtn.classList.add('hidden');
+                    }
+                } else {
+                    if (loginBtn) loginBtn.classList.remove('hidden');
+                    if (loggedInView) {
+                        loggedInView.classList.add('hidden');
+                        loggedInView.style.display = 'none';
+                    }
+                    const adminBtn = document.getElementById('admin-panel-btn');
+                    if (adminBtn) adminBtn.classList.add('hidden');
                 }
-                if (markerToggle) markerToggle.style.display = 'flex';
-
-                // Mostrar botón de admin si el rol es privilegiado
-                const adminBtn = document.getElementById('admin-panel-btn');
-                const userRole = localStorage.getItem('sig_role');
-                if (adminBtn) {
-                    if (userRole === 'admin') adminBtn.classList.remove('hidden');
-                    else adminBtn.classList.add('hidden');
-                }
-
-                console.log('✅ UI Actualizada: Usuario Autenticado');
-            } else {
-                if (loginBtn) loginBtn.classList.remove('hidden');
-                if (loggedInView) {
-                    loggedInView.classList.add('hidden');
-                    loggedInView.style.display = 'none';
-                }
-                if (markerToggle) markerToggle.style.display = 'none';
-
-                const adminBtn = document.getElementById('admin-panel-btn');
-                if (adminBtn) adminBtn.classList.add('hidden');
-
-                if (markerModeActive) toggleMarkerMode();
-                console.log('ℹ️ UI Actualizada: Modo Público');
+            } catch (err) {
+                console.error('❌ Error en updateAuthUI:', err);
             }
         }
 
@@ -2850,19 +2851,42 @@
         }
 
         async function handleAuth(event) {
-            event.preventDefault();
-            const username = document.getElementById('auth-user').value;
-            const password = document.getElementById('auth-pass').value;
+            if (event) {
+                if (event.preventDefault) event.preventDefault();
+                if (event.stopPropagation) event.stopPropagation();
+            }
+
+            const btn = document.getElementById('auth-submit-btn');
+            const u = document.getElementById('auth-user');
+            const p = document.getElementById('auth-pass');
+
+            if (!u || !p) return console.error('Campos no encontrados');
 
             if (authMode === 'login') {
-                await login(username, password);
+                if (btn) {
+                    btn.textContent = 'VALIDANDO...';
+                    btn.disabled = true;
+                }
+
+                try {
+                    await login(u.value, p.value);
+                } catch (e) {
+                    console.error('Login Error:', e);
+                    showNotification('Error de sistema', 'error');
+                } finally {
+                    if (btn) {
+                        btn.textContent = 'INGRESAR AL SIG';
+                        btn.disabled = false;
+                    }
+                }
             } else {
-                const full_name = document.getElementById('reg-fullname').value;
-                const email = document.getElementById('reg-email').value;
-                const university = document.getElementById('reg-uni').value;
-                await register(username, password, full_name, email, university);
+                const fn = document.getElementById('reg-fullname').value;
+                const em = document.getElementById('reg-email').value;
+                const un = document.getElementById('reg-uni').value;
+                await register(u.value, p.value, fn, em, un);
             }
         }
+        window.handleAuth = handleAuth;
 
         async function handleGoogleLogin(response) {
             try {
@@ -2990,7 +3014,7 @@
                         autocomplete="current-password" style="margin-bottom:0">
                 </div>
 
-                <button type="submit" id="auth-submit-btn"
+                <button type="button" id="auth-submit-btn" onclick="handleAuth(event)"
                     class="login-submit mt-4 shadow-xl hover:shadow-[#F6C453]/20">INGRESAR AL SIG</button>
             </form>
 
