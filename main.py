@@ -51,10 +51,18 @@ if not os.path.exists(UPLOAD_DIR):
 import urllib.parse
 
 # La URL se obtiene de las variables de entorno para mayor seguridad
-DATABASE_URL = os.environ.get("DATABASE_URL", "postgresql://postgres:Tekunikaru1997+@db.lpulqvzzhqynjlxaxgoq.supabase.co:5432/postgres")
+DATABASE_URL = os.environ.get("DATABASE_URL")
 
 def get_db_conn():
+    if not DATABASE_URL:
+        print("ERROR: La variable DATABASE_URL no está configurada en Render.")
+        return None
     try:
+        # Debug: Mostrar solo la parte del host y usuario para ver si Render lo lee bien
+        from urllib.parse import urlparse
+        parsed = urlparse(DATABASE_URL)
+        print(f"Intentando conectar a: {parsed.hostname} con el usuario: {parsed.username}")
+        
         # Añadimos un tiempo de espera para que no se congele el servidor si falla
         conn = psycopg2.connect(
             DATABASE_URL, 
