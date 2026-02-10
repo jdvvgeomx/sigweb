@@ -1526,7 +1526,8 @@
             // updateServicePointsForScale(); 
 
             // Generar Menú Acordeón
-            let container = existingContainer; // Reusar referencia
+            const existingContainer = document.getElementById('uv-menu-container');
+            let container = existingContainer; // Usar el ID correcto
 
             // Parche: Si no existe el contenedor, crearlo dinámicamente después del botón
             if (!container) {
@@ -2609,8 +2610,38 @@
             if (p) { map.setView([p.lat, p.lng], 16); }
         }
 
-        function showNotification(m, t) {
-            console.log(`Notificación(${t}): ${m}`);
+        // Sistema de Notificaciones Reales (Toast)
+        function showNotification(message, type = 'info') {
+            console.log(`[SIG] ${type}: ${message}`);
+
+            let container = document.getElementById('notification-toast-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'notification-toast-container';
+                container.className = 'fixed bottom-5 right-5 z-[9999] flex flex-col gap-3 pointer-events-none';
+                document.body.appendChild(container);
+            }
+
+            const toast = document.createElement('div');
+            const colors = {
+                success: 'from-[#00c853] to-[#b2ff59] border-[#b2ff59]',
+                error: 'from-[#ff1744] to-[#f44336] border-[#ff1744]',
+                info: 'from-[#1e3c72] to-[#2a5298] border-[#2a5298]'
+            };
+
+            toast.className = `p-4 rounded-2xl shadow-2xl border-l-4 bg-gradient-to-r ${colors[type] || colors.info} 
+                              text-white font-bold text-sm min-w-[300px] flex items-center gap-3
+                              animate-slide-in-right backdrop-blur-md bg-opacity-90 pointer-events-auto`;
+
+            const icon = type === 'success' ? 'fa-check-circle' : (type === 'error' ? 'fa-exclamation-triangle' : 'fa-info-circle');
+            toast.innerHTML = `<i class="fas ${icon} text-xl"></i> <span>${message}</span>`;
+
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.add('animate-slide-out-right');
+                setTimeout(() => toast.remove(), 500);
+            }, 4000);
         }
 
         // ============================================
