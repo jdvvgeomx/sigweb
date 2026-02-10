@@ -2851,29 +2851,42 @@
         }
 
         async function handleAuth(event) {
-            event.preventDefault();
-            const username = document.getElementById('auth-user').value;
-            const password = document.getElementById('auth-pass').value;
+            if (event) {
+                if (event.preventDefault) event.preventDefault();
+                if (event.stopPropagation) event.stopPropagation();
+            }
+
+            const btn = document.getElementById('auth-submit-btn');
+            const u = document.getElementById('auth-user');
+            const p = document.getElementById('auth-pass');
+
+            if (!u || !p) return console.error('Campos no encontrados');
 
             if (authMode === 'login') {
-                const btn = document.getElementById('auth-submit-btn');
-                const originalText = btn.textContent;
-                btn.textContent = 'CONECTANDO...';
-                btn.disabled = true;
+                if (btn) {
+                    btn.textContent = 'VALIDANDO...';
+                    btn.disabled = true;
+                }
 
                 try {
-                    await login(username, password);
+                    await login(u.value, p.value);
+                } catch (e) {
+                    console.error('Login Error:', e);
+                    showNotification('Error de sistema', 'error');
                 } finally {
-                    btn.textContent = originalText;
-                    btn.disabled = false;
+                    if (btn) {
+                        btn.textContent = 'INGRESAR AL SIG';
+                        btn.disabled = false;
+                    }
                 }
             } else {
-                const full_name = document.getElementById('reg-fullname').value;
-                const email = document.getElementById('reg-email').value;
-                const university = document.getElementById('reg-uni').value;
-                await register(username, password, full_name, email, university);
+                const fn = document.getElementById('reg-fullname').value;
+                const em = document.getElementById('reg-email').value;
+                const un = document.getElementById('reg-uni').value;
+                await register(u.value, p.value, fn, em, un);
             }
         }
+        window.handleAuth = handleAuth;
 
         async function handleGoogleLogin(response) {
             try {
@@ -3001,7 +3014,7 @@
                         autocomplete="current-password" style="margin-bottom:0">
                 </div>
 
-                <button type="submit" id="auth-submit-btn"
+                <button type="button" id="auth-submit-btn" onclick="handleAuth(event)"
                     class="login-submit mt-4 shadow-xl hover:shadow-[#F6C453]/20">INGRESAR AL SIG</button>
             </form>
 
