@@ -340,11 +340,7 @@ def is_uv_email(email: str) -> bool:
 
 @app.post("/api/v1/auth/register")
 async def register(user: UserCreate):
-    if not is_uv_email(user.email):
-        raise HTTPException(
-            status_code=400, 
-            detail="Solo se permiten correos institucionales de la UV (@uv.mx o @estudiantes.uv.mx)"
-        )
+    # Eliminada restricción de dominio UV para facilitar acceso general
     conn = get_db_conn()
     if not conn:
         raise HTTPException(status_code=503, detail="Base de datos no disponible")
@@ -407,11 +403,7 @@ async def google_login(token_data: dict):
         # El token es válido, extraemos la info
         email = idinfo['email']
 
-        if not is_uv_email(email):
-            raise HTTPException(
-                status_code=403, 
-                detail="Acceso denegado: Tu cuenta de Google no pertenece a la Universidad Veracruzana"
-            )
+        # Eliminada restricción de dominio UV para facilitar acceso general
 
         name = idinfo.get('name', email.split('@')[0])
         picture = idinfo.get('picture')

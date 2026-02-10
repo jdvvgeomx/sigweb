@@ -2943,7 +2943,7 @@
                     loadCustomPointsFromServer();
                 } else {
                     const errorData = await res.json();
-                    showNotification(errorData.detail || 'Tu cuenta debe ser @uv.mx o @estudiantes.uv.mx', 'error');
+                    showNotification(errorData.detail || 'Error al validar cuenta de Google', 'error');
                 }
             } catch (e) {
                 showNotification('Error de conexión con Google', 'error');
@@ -2966,7 +2966,8 @@
                         width: "386",
                         text: "continue_with",
                         shape: "rectangular",
-                        locale: "es"
+                        locale: "es",
+                        logo_alignment: "left"
                     }
                 );
             }
@@ -3025,8 +3026,8 @@
                     </div>
                     <div class="relative">
                         <i class="fas fa-envelope absolute left-3 top-1/2 -translate-y-1/2 text-[#F6C453]/60"></i>
-                        <input type="email" id="reg-email" placeholder="Correo UV (ej: zs210... @estudiantes.uv.mx)"
-                            class="login-input pl-10" style="margin-bottom:0">
+                        <input type="email" id="reg-email" placeholder="Correo electrónico" class="login-input pl-10"
+                            style="margin-bottom:0">
                     </div>
                     <div class="relative">
                         <i class="fas fa-graduation-cap absolute left-3 top-1/2 -translate-y-1/2 text-[#F6C453]/60"></i>
