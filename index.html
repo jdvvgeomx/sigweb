@@ -27,15 +27,66 @@
         }
 
         .login-card {
-            background: rgba(30, 60, 114, 0.95);
+            background: rgba(30, 60, 114, 0.90);
             border: 1px solid rgba(246, 196, 83, 0.4);
-            padding: 32px;
             border-radius: 24px;
-            width: 90%;
-            max-width: 400px;
-            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.6);
+            width: 95%;
+            max-width: 450px;
+            max-height: 90vh;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
             color: white;
-            text-align: center;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            backdrop-filter: blur(16px);
+            animation: modalSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes modalSlideUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .login-scroll-area {
+            overflow-y: auto;
+            padding: 0 32px 32px 32px;
+            flex: 1;
+        }
+
+        /* Scrollbar premium para el modal */
+        .login-scroll-area::-webkit-scrollbar {
+            width: 6px;
+        }
+        .login-scroll-area::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        .login-scroll-area::-webkit-scrollbar-thumb {
+            background: rgba(246, 196, 83, 0.5);
+            border-radius: 10px;
+        }
+
+        .login-close-x {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            z-index: 10;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .login-close-x:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #F6C453;
+            transform: rotate(90deg);
         }
 
         .login-input {
@@ -3004,70 +3055,73 @@
 
     <!-- Modal de Login / Registro -->
     <div id="login-modal">
-        <div class="login-card" style="max-width: 450px;">
-            <!-- Selector de modo -->
-            <div class="flex border-b border-white/10 mb-6 overflow-hidden rounded-t-xl">
-                <button onclick="setAuthMode('login')" id="tab-login"
-                    class="flex-1 py-3 font-bold text-[#F6C453] border-b-2 border-[#F6C453] bg-white/5">INICIAR
-                    SESIÓN</button>
-                <button onclick="setAuthMode('register')" id="tab-register"
-                    class="flex-1 py-3 font-bold text-white/40 border-b-2 border-transparent">REGISTRARSE</button>
-            </div>
-
-            <h2 id="auth-title" class="text-xl font-black text-white mb-6 uppercase tracking-wider">Acceso
-                Administrativo</h2>
-
-            <form id="auth-form" class="space-y-4">
-                <div id="register-only-fields" class="hidden space-y-4 mb-4">
-                    <div class="relative">
-                        <i class="fas fa-user-tag absolute left-3 top-1/2 -translate-y-1/2 text-[#F6C453]/60"></i>
-                        <input type="text" id="reg-fullname" placeholder="Nombre Completo" class="login-input pl-10"
-                            style="margin-bottom:0">
-                    </div>
-                    <div class="relative">
-                        <i class="fas fa-envelope absolute left-3 top-1/2 -translate-y-1/2 text-[#F6C453]/60"></i>
-                        <input type="email" id="reg-email" placeholder="Correo electrónico" class="login-input pl-10"
-                            style="margin-bottom:0">
-                    </div>
-                    <div class="relative">
-                        <i class="fas fa-graduation-cap absolute left-3 top-1/2 -translate-y-1/2 text-[#F6C453]/60"></i>
-                        <input type="text" id="reg-uni" placeholder="Facultad" class="login-input pl-10"
-                            style="margin-bottom:0">
-                    </div>
-                    <div class="h-px bg-white/10 my-4"></div>
-                </div>
-
-                <div class="relative">
-                    <i class="fas fa-user absolute left-3 top-1/2 -translate-y-1/2 text-[#F6C453]/60"></i>
-                    <input type="text" id="auth-user" placeholder="Usuario" class="login-input pl-10" required
-                        autocomplete="username" style="margin-bottom:0">
-                </div>
-                <div class="relative">
-                    <i class="fas fa-lock absolute left-3 top-1/2 -translate-y-1/2 text-[#F6C453]/60"></i>
-                    <input type="password" id="auth-pass" placeholder="Contraseña" class="login-input pl-10" required
-                        autocomplete="current-password" style="margin-bottom:0">
-                </div>
-
-                <button type="button" id="auth-submit-btn" onclick="handleAuth(event)"
-                    class="login-submit mt-4 shadow-xl hover:shadow-[#F6C453]/20">INGRESAR AL SIG</button>
-            </form>
-
-            <!-- Divisor para Google -->
-            <div id="google-login-section">
-                <div class="flex items-center gap-3 my-6">
-                    <div class="h-px bg-white/20 flex-1"></div>
-                    <span class="text-[10px] font-bold text-white/40">O CONTINUAR CON</span>
-                    <div class="h-px bg-white/20 flex-1"></div>
-                </div>
-
-                <div id="google-btn"
-                    style="min-height: 40px; display: flex; justify-items: center; justify-content: center;"></div>
-            </div>
-
-            <button onclick="closeLoginModal()"
-                class="mt-8 text-xs opacity-40 hover:opacity-100 transition-opacity flex items-center justify-center gap-2 mx-auto">
-                <i class="fas fa-times"></i> Salir sin cambios
+        <div class="login-card">
+            <!-- Botón de cierre X superior -->
+            <button onclick="closeLoginModal()" class="login-close-x" title="Cerrar">
+                <i class="fas fa-times"></i>
             </button>
+
+            <!-- Selector de modo (Fijo arriba) -->
+            <div class="flex border-b border-white/10 overflow-hidden shrink-0">
+                <button onclick="setAuthMode('login')" id="tab-login"
+                    class="flex-1 py-4 font-bold text-[#F6C453] border-b-2 border-[#F6C453] bg-white/5 transition-all">INICIAR SESIÓN</button>
+                <button onclick="setAuthMode('register')" id="tab-register"
+                    class="flex-1 py-4 font-bold text-white/40 border-b-2 border-transparent hover:text-white transition-all">REGISTRARSE</button>
+            </div>
+
+            <!-- Área con Scroll -->
+            <div class="login-scroll-area text-center pt-8">
+                <h2 id="auth-title" class="text-2xl font-black text-white mb-8 uppercase tracking-wider">Acceso Administrativo</h2>
+
+                <form id="auth-form" class="space-y-4">
+                    <div id="register-only-fields" class="hidden space-y-4 mb-4">
+                        <div class="relative">
+                            <i class="fas fa-user-tag absolute left-3 top-1/2 -translate-y-1/2 text-[#F6C453]/60"></i>
+                            <input type="text" id="reg-fullname" placeholder="Nombre Completo" class="login-input pl-10" style="margin-bottom:0">
+                        </div>
+                        <div class="relative">
+                            <i class="fas fa-envelope absolute left-3 top-1/2 -translate-y-1/2 text-[#F6C453]/60"></i>
+                            <input type="email" id="reg-email" placeholder="Correo electrónico" class="login-input pl-10" style="margin-bottom:0">
+                        </div>
+                        <div class="relative">
+                            <i class="fas fa-graduation-cap absolute left-3 top-1/2 -translate-y-1/2 text-[#F6C453]/60"></i>
+                            <input type="text" id="reg-uni" placeholder="Facultad" class="login-input pl-10" style="margin-bottom:0">
+                        </div>
+                        <div class="h-px bg-white/10 my-6"></div>
+                    </div>
+
+                    <div class="relative">
+                        <i class="fas fa-user absolute left-3 top-1/2 -translate-y-1/2 text-[#F6C453]/60"></i>
+                        <input type="text" id="auth-user" placeholder="Usuario" class="login-input pl-10" required autocomplete="username" style="margin-bottom:0">
+                    </div>
+                    <div class="relative">
+                        <i class="fas fa-lock absolute left-3 top-1/2 -translate-y-1/2 text-[#F6C453]/60"></i>
+                        <input type="password" id="auth-pass" placeholder="Contraseña" class="login-input pl-10" required autocomplete="current-password" style="margin-bottom:0">
+                    </div>
+
+                    <div class="pt-4">
+                        <button type="button" id="auth-submit-btn" onclick="handleAuth(event)"
+                            class="login-submit shadow-xl hover:shadow-[#F6C453]/30">INGRESAR AL SIG</button>
+                    </div>
+                </form>
+
+                <!-- Divisor para Google -->
+                <div id="google-login-section">
+                    <div class="flex items-center gap-3 my-8">
+                        <div class="h-px bg-white/10 flex-1"></div>
+                        <span class="text-[10px] font-bold text-white/30 tracking-widest uppercase">O continuar con</span>
+                        <div class="h-px bg-white/10 flex-1"></div>
+                    </div>
+
+                    <div class="flex justify-center">
+                        <div id="google-btn"></div>
+                    </div>
+                </div>
+
+                <p class="mt-8 text-[10px] text-white/30">
+                    © 2026 Universidad Veracruzana - SIG Web
+                </p>
+            </div>
         </div>
     </div>
 
