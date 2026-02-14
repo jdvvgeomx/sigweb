@@ -1802,12 +1802,57 @@
             if (poblacion.veracruz && poblacion.veracruz.POB1) {
                 const pv = poblacion.veracruz;
                 abrirPanel("Información Estatal (Veracruz)", `
-      <ul class="list-disc ml-4">
-        <li>Población Total: <b>${pv.POB1.toLocaleString()}</b></li>
-        <li>Hombres: <b>${pv.POB84.toLocaleString()}</b></li>
-        <li>Mujeres: <b>${pv.POB42.toLocaleString()}</b></li>
-      </ul>
-    `);
+                    <div class="mb-4">
+                        <p class="text-xs uppercase tracking-widest text-[#F6C453] mb-1 font-bold">Estatal</p>
+                        <h3 class="text-lg font-bold mb-3">Estado de Veracruz</h3>
+                        
+                        <div class="bg-white/10 rounded-xl p-3 mb-4 border border-white/5">
+                            <p class="text-[10px] uppercase opacity-60 mb-0.5">Población Total</p>
+                            <p class="text-2xl font-black text-[#F6C453]">${(pv.POB1 || 0).toLocaleString()}</p>
+                        </div>
+
+                        <ul class="text-[12px] space-y-2 mb-4">
+                            <li class="flex justify-between items-center text-blue-300">
+                                <span class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-[#3B82F6]"></div> Hombres</span> 
+                                <b class="text-white">${(pv.POB84 || 0).toLocaleString()}</b>
+                            </li>
+                            <li class="flex justify-between items-center text-pink-300">
+                                <span class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-[#F472B6]"></div> Mujeres</span> 
+                                <b class="text-white">${(pv.POB42 || 0).toLocaleString()}</b>
+                            </li>
+                        </ul>
+                        <div class="relative h-44 w-full">
+                            <canvas id="poblacionChartEstatal"></canvas>
+                        </div>
+                    </div>
+                `);
+
+                if (currentChart) currentChart.destroy();
+
+                setTimeout(() => {
+                    const ctx = document.getElementById('poblacionChartEstatal').getContext('2d');
+                    currentChart = new Chart(ctx, {
+                        type: 'pie',
+                        data: {
+                            labels: ['Hombres', 'Mujeres'],
+                            datasets: [{
+                                data: [pv.POB84, pv.POB42],
+                                backgroundColor: ['#3B82F6', '#F472B6'],
+                                borderWidth: 0
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                    labels: { color: '#fff', font: { size: 10 } }
+                                }
+                            }
+                        }
+                    });
+                }, 100);
             }
         }
 
@@ -1846,12 +1891,57 @@
             if (poblacion.nacional && poblacion.nacional.POB1) {
                 const pn = poblacion.nacional;
                 abrirPanel("Información Nacional", `
-      <ul class="list-disc ml-4">
-        <li>Población Total: <b>${pn.POB1.toLocaleString()}</b></li>
-        <li>Hombres: <b>${pn.POB84.toLocaleString()}</b></li>
-        <li>Mujeres: <b>${pn.POB42.toLocaleString()}</b></li>
-      </ul>
-    `);
+                    <div class="mb-4">
+                        <p class="text-xs uppercase tracking-widest text-[#F6C453] mb-1 font-bold">Nacional</p>
+                        <h3 class="text-lg font-bold mb-3">Nivel Nacional</h3>
+                        
+                        <div class="bg-white/10 rounded-xl p-3 mb-4 border border-white/5">
+                            <p class="text-[10px] uppercase opacity-60 mb-0.5">Población Total</p>
+                            <p class="text-2xl font-black text-[#F6C453]">${(pn.POB1 || 0).toLocaleString()}</p>
+                        </div>
+
+                        <ul class="text-[12px] space-y-2 mb-4">
+                            <li class="flex justify-between items-center text-blue-300">
+                                <span class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-[#3B82F6]"></div> Hombres</span> 
+                                <b class="text-white">${(pn.POB84 || 0).toLocaleString()}</b>
+                            </li>
+                            <li class="flex justify-between items-center text-pink-300">
+                                <span class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-[#F472B6]"></div> Mujeres</span> 
+                                <b class="text-white">${(pn.POB42 || 0).toLocaleString()}</b>
+                            </li>
+                        </ul>
+                        <div class="relative h-44 w-full">
+                            <canvas id="poblacionChartNacional"></canvas>
+                        </div>
+                    </div>
+                `);
+
+                if (currentChart) currentChart.destroy();
+
+                setTimeout(() => {
+                    const ctx = document.getElementById('poblacionChartNacional').getContext('2d');
+                    currentChart = new Chart(ctx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['Hombres', 'Mujeres'],
+                            datasets: [{
+                                data: [pn.POB84, pn.POB42],
+                                backgroundColor: ['#3B82F6', '#F472B6'],
+                                borderWidth: 0
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                    labels: { color: '#fff', font: { size: 10 } }
+                                }
+                            }
+                        }
+                    });
+                }, 100);
             }
         }
 
@@ -2189,138 +2279,7 @@
         };
 
 
-        const _oldShowState = showState;
-        showState = function () {
-            // Lógica de Toggle: Si ya estamos en esta escala, alternar el panel de información
-            if (currentScale === 'estatal') {
-                document.getElementById('info-panel').classList.toggle('hidden');
-                return;
-            }
-            _oldShowState();
-            const p = poblacion.veracruz;
-            if (p) {
-                const panel = document.getElementById('info-content');
-                panel.innerHTML = `
-                    <div class="mb-4">
-                        <p class="text-xs uppercase tracking-widest text-[#F6C453] mb-1 font-bold">Estatal</p>
-                        <h3 class="text-lg font-bold mb-3">Estado de Veracruz</h3>
-                        
-                        <div class="bg-white/10 rounded-xl p-3 mb-4 border border-white/5">
-                            <p class="text-[10px] uppercase opacity-60 mb-0.5">Población Total</p>
-                            <p class="text-2xl font-black text-[#F6C453]">${(p.POB1 || 0).toLocaleString()}</p>
-                        </div>
-
-                        <ul class="text-[12px] space-y-2 mb-4">
-                            <li class="flex justify-between items-center text-blue-300">
-                                <span class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-[#3B82F6]"></div> Hombres</span> 
-                                <b class="text-white">${(p.POB84 || 0).toLocaleString()}</b>
-                            </li>
-                            <li class="flex justify-between items-center text-pink-300">
-                                <span class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-[#F472B6]"></div> Mujeres</span> 
-                                <b class="text-white">${(p.POB42 || 0).toLocaleString()}</b>
-                            </li>
-                        </ul>
-                        <div class="relative h-44 w-full">
-                            <canvas id="poblacionChartEstatal"></canvas>
-                        </div>
-                    </div>
-                `;
-
-                if (currentChart) currentChart.destroy();
-
-                setTimeout(() => {
-                    const ctx = document.getElementById('poblacionChartEstatal').getContext('2d');
-                    currentChart = new Chart(ctx, {
-                        type: 'pie',
-                        data: {
-                            labels: ['Hombres', 'Mujeres'],
-                            datasets: [{
-                                data: [p.POB84, p.POB42],
-                                backgroundColor: ['#3B82F6', '#F472B6'],
-                                borderWidth: 0
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: {
-                                    position: 'bottom',
-                                    labels: { color: '#fff', font: { size: 10 } }
-                                }
-                            }
-                        }
-                    });
-                }, 100);
-            }
-        };
-
-
-        const _oldShowNational = showNational;
-        showNational = function () {
-            // Lógica de Toggle: Si ya estamos en esta escala, alternar el panel de información
-            if (currentScale === 'nacional') {
-                document.getElementById('info-panel').classList.toggle('hidden');
-                return;
-            }
-            _oldShowNational();
-            const p = poblacion.nacional;
-            if (p) {
-                const panel = document.getElementById('info-content');
-                panel.innerHTML = `
-                    <div class="mb-4">
-                        <p class="text-xs uppercase tracking-widest text-[#F6C453] mb-1 font-bold">Nacional</p>
-                        <h3 class="text-lg font-bold mb-3">Nivel Nacional</h3>
-                        
-                        <div class="bg-white/10 rounded-xl p-3 mb-4 border border-white/5">
-                            <p class="text-[10px] uppercase opacity-60 mb-0.5">Población Total</p>
-                            <p class="text-2xl font-black text-[#F6C453]">${(p.POB1 || 0).toLocaleString()}</p>
-                        </div>
-
-                        <ul class="text-[12px] space-y-2 mb-4">
-                            <li class="flex justify-between items-center text-blue-300">
-                                <span class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-[#3B82F6]"></div> Hombres</span> 
-                                <b class="text-white">${(p.POB84 || 0).toLocaleString()}</b>
-                            </li>
-                            <li class="flex justify-between items-center text-pink-300">
-                                <span class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-[#F472B6]"></div> Mujeres</span> 
-                                <b class="text-white">${(p.POB42 || 0).toLocaleString()}</b>
-                            </li>
-                        </ul>
-                        <div class="relative h-44 w-full">
-                            <canvas id="poblacionChartNacional"></canvas>
-                        </div>
-                    </div>
-                `;
-
-                if (currentChart) currentChart.destroy();
-
-                setTimeout(() => {
-                    const ctx = document.getElementById('poblacionChartNacional').getContext('2d');
-                    currentChart = new Chart(ctx, {
-                        type: 'doughnut',
-                        data: {
-                            labels: ['Hombres', 'Mujeres'],
-                            datasets: [{
-                                data: [p.POB84, p.POB42],
-                                backgroundColor: ['#3B82F6', '#F472B6'],
-                                borderWidth: 0
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: {
-                                    position: 'bottom',
-                                    labels: { color: '#fff', font: { size: 10 } }
-                                }
-                            }
-                        }
-                    });
-                }, 100);
-            }
-        };
+        // Wrappers redundantes eliminados. Lógica integrada en funciones principales.
 
         // ============================================
         // CONFIGURACIÓN DE SERVIDOR PYTHON (Nativa)
