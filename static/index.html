@@ -1163,7 +1163,9 @@
 
 
         // Configuración para el despliegue híbrido (GitHub + Render)
-        const API_BASE_URL = 'https://sig-web-uv.onrender.com';
+        const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://localhost:8000'
+            : 'https://sig-web-uv.onrender.com';
 
         async function apiFetch(endpoint, options = {}) {
             const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
@@ -2637,7 +2639,7 @@
         window.deleteCustomPoint = async function (pointId) {
             const point = customPoints.find(p => String(p.id) === String(pointId));
             if (!point) return;
-            if (await showCustomConfirm(`¿Eliminar "${point.name}" de tu base de datos ? `)) {
+            if (confirm(`¿Eliminar "${point.name}" de tu base de datos?`)) {
                 const success = await deletePointFromServer(pointId);
                 if (success) {
                     showNotification('Punto eliminado del servidor', 'success');
