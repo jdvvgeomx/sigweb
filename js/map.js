@@ -126,7 +126,7 @@ customPointsLayer = L.layerGroup().addTo(map);
 var highlightLayer = L.geoJSON(null, {
     style: {
         color: "#1affff",
-        weight: 3, // Línea más delgada
+        weight: 4, // Un poco más presente pero elegante
         fillOpacity: 0, 
         opacity: 1,
         dashArray: null 
@@ -382,14 +382,6 @@ function showMunicipalities() {
                 return { fillColor: getColor(pob), weight: 1, opacity: 1, color: 'white', fillOpacity: 0.7 };
             },
             onEachFeature: (f, l) => {
-                // Etiqueta flotante que solo sale al pasar el puntero (Hover)
-                l.bindTooltip(f.properties.NOMGEO, {
-                    permanent: false,
-                    direction: 'center',
-                    className: 'custom-municipio-tooltip',
-                    sticky: true // Sigue al mouse
-                });
-
                 l.on('click', (e) => {
                     // --- NUEVA LÓGICA DE PRIORIDAD DE ANÁLISIS ---
 
@@ -426,8 +418,18 @@ function showMunicipalities() {
                     if (highlightLabel) { try { map.removeLayer(highlightLabel); } catch (e) { }; highlightLabel = null; }
 
                     highlightLayer.addData(f);
+                    
+                    // Solo el municipio seleccionado tendrá la etiqueta flotante al pasar el mouse
+                    highlightLayer.eachLayer(layer => {
+                        layer.bindTooltip(f.properties.NOMGEO, {
+                            permanent: false,
+                            direction: 'center',
+                            className: 'custom-municipio-tooltip',
+                            sticky: true
+                        });
+                    });
+
                     applyGlowToLayer(highlightLayer);
-                    // Eliminamos la etiqueta fija highlightLabel que se creaba aquí
 
                     // Normalización robusta para búsqueda de población (igual que en ui.js)
                     const normalizeStr = str => str ? str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().trim() : "";

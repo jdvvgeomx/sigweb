@@ -1074,7 +1074,7 @@ main {
 }
 
 .pulse {
-    /* Borde neón fijo y nítido */
+    pointer-events: none; /* Asegura que el resplandor no interfiera con los clics */
 }
 
 
@@ -1090,20 +1090,27 @@ main {
 }
 
 .custom-municipio-tooltip {
-    background: #1a2a6c !important; /* Azul cobalto sólido */
+    background: #1a2a6c !important; 
     color: #F6C453 !important;
     font-weight: 800 !important;
     font-size: 13px !important;
-    padding: 3px 8px !important; /* Ajustado al tamaño del texto */
-    border-radius: 6px !important;
-    border: 1.5px solid #F6C453 !important;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6) !important;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.8) !important;
+    padding: 2px 6px !important; /* Más ceñido al texto */
+    border-radius: 4px !important;
+    border: 1.2px solid #F6C453 !important;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.7) !important;
+    text-shadow: 1px 1px 1px rgba(0,0,0,0.8) !important;
     white-space: nowrap !important;
     opacity: 1 !important;
 }
 
-/* Forzar que el puntero del tooltip (flechita) desaparezca para que se vea más limpio */
+/* Quitar recuadro negro de enfoque (outline) y flecha del tooltip */
+.leaflet-container :focus,
+path.leaflet-interactive:focus,
+.leaflet-container path:focus {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
 .leaflet-tooltip-top:before, .leaflet-tooltip-bottom:before, .leaflet-tooltip-left:before, .leaflet-tooltip-right:before {
     display: none !important;
 }

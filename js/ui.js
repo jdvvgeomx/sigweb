@@ -603,6 +603,17 @@ function setupSearchListeners() {
         let feature = municipalGeoJSON ? municipalGeoJSON.features.find(f => f.properties.CVEGEO === cve) : null;
         if (feature) {
             highlightLayer.addData(feature);
+            
+            // Etiqueta flotante solo para este municipio seleccionado
+            highlightLayer.eachLayer(layer => {
+                layer.bindTooltip(item.nombre, {
+                    permanent: false,
+                    direction: 'center',
+                    className: 'custom-municipio-tooltip',
+                    sticky: true
+                });
+            });
+
             applyGlowToLayer(highlightLayer);
             const bounds = L.geoJSON(feature).getBounds();
             try { map.flyToBounds(bounds, { padding: [40, 40], duration: 1.0 }); } catch (e) { map.fitBounds(bounds); }
