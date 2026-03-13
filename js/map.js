@@ -140,7 +140,7 @@ function applyGlowToLayer(geoLayer) {
         geoLayer.eachLayer(l => {
             const el = l.getElement ? l.getElement() : null;
             if (el) {
-                el.classList.add('glow', 'pulse');
+                el.classList.add('glow', 'pulse'); // Mantenemos la clase pero la animación está desactivada en CSS
             } else {
                 setTimeout(() => { try { l.getElement().classList.add('glow', 'pulse'); } catch (e) { } }, 50);
             }
@@ -431,7 +431,7 @@ function showMunicipalities() {
                     const center = l.getBounds().getCenter();
 
                     highlightLabel = L.marker(center, {
-                        icon: L.divIcon({ className: 'etiquetaGlow', html: `<div class="labelBox pulseLabel">${f.properties.NOMGEO}</div>` }),
+                        icon: L.divIcon({ className: 'etiquetaGlow', html: `<div class="labelBox fixedLabel">${f.properties.NOMGEO}</div>` }),
                         interactive: false
                     }).addTo(map);
 

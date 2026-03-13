@@ -1073,23 +1073,24 @@ main {
     color: #F6C453;
 }
 
-/* --- EFECTOS DE RESPLANDOR Y ANIMACIÓN PARA MUNICIPIOS SELECCIONADOS --- */
+/* --- EFECTOS DE RESPLANDOR PARA MUNICIPIOS SELECCIONADOS --- */
 .glow {
     filter: drop-shadow(0 0 15px rgba(26, 255, 255, 0.9)) drop-shadow(0 0 5px rgba(26, 255, 255, 0.5));
 }
 
 .pulse {
-    animation: simplePulse 2s infinite alternate ease-in-out;
+    /* Eliminada la animación para dejar el polígono fijo */
 }
 
 @keyframes simplePulse {
     from { transform: scale(1); filter: brightness(1); }
-    to { transform: scale(1.02); filter: brightness(1.2); }
+    to { transform: scale(1); filter: brightness(1.1); }
 }
 
 .etiquetaGlow {
     background: transparent !important;
     border: none !important;
+    z-index: 1000 !important;
 }
 
 .labelBox {
@@ -1097,24 +1098,23 @@ main {
     white-space: nowrap;
 }
 
-.pulseLabel {
-    background: linear-gradient(135deg, rgba(30, 60, 114, 0.9), rgba(15, 23, 42, 0.95));
+.fixedLabel {
+    background: #1a2a6c; /* Azul cobalto sólido para máximo contraste */
     color: #F6C453;
-    font-weight: 900;
-    font-size: 14px;
-    padding: 6px 16px;
-    border-radius: 12px;
+    font-weight: 800;
+    font-size: 13px;
+    padding: 5px 12px;
+    border-radius: 8px;
     border: 2px solid #F6C453;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6), 0 0 10px rgba(246, 196, 83, 0.3);
-    text-shadow: 0 0 5px rgba(0,0,0,0.5);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.8);
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
     transform: translate(-50%, -50%);
-    animation: labelPulse 1.5s infinite alternate ease-in-out;
     display: flex;
     align-items: center;
     justify-content: center;
+    letter-spacing: 0.5px;
 }
 
-@keyframes labelPulse {
-    from { transform: translate(-50%, -50%) scale(0.95); opacity: 0.9; }
-    to { transform: translate(-50%, -50%) scale(1.05); opacity: 1; box-shadow: 0 4px 20px rgba(246, 196, 83, 0.5); }
+}
+; }
 }
