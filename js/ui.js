@@ -529,23 +529,31 @@ ui.renderMunicipioChart = function (ctx, data, isMini = false) {
             },
             options: {
                 responsive: true,
-                maintainAspectRatio: false,
-                layout: { padding: isMini ? 5 : 10 },
+                layout: { 
+                    padding: isMini ? 10 : 25 
+                },
                 plugins: {
                     legend: {
                         position: 'bottom',
                         display: !isMini,
                         labels: {
                             color: '#fff',
-                            padding: 12,
-                            font: { size: 11, weight: 'bold' },
+                            padding: 10,
+                            font: { size: 10, weight: 'bold' },
                             usePointStyle: true
                         }
                     },
                     tooltip: {
-                        backgroundColor: 'rgba(0,0,0,0.9)',
-                        padding: 12,
-                        cornerRadius: 10,
+                        enabled: true,
+                        backgroundColor: 'rgba(0,0,0,0.95)',
+                        titleColor: '#F6C453',
+                        bodyColor: '#fff',
+                        padding: 8,
+                        cornerRadius: 8,
+                        displayColors: true,
+                        borderColor: 'rgba(246, 196, 83, 0.5)',
+                        borderWidth: 1,
+                        caretSize: 6,
                         callbacks: {
                             label: function (context) {
                                 const val = context.raw || 0;
