@@ -126,10 +126,10 @@ customPointsLayer = L.layerGroup().addTo(map);
 var highlightLayer = L.geoJSON(null, {
     style: {
         color: "#1affff",
-        weight: 6,
-        fillOpacity: 0.3,
+        weight: 8,
+        fillOpacity: 0, 
         opacity: 1,
-        dashArray: '3'
+        dashArray: null 
     }
 }).addTo(map);
 
@@ -244,15 +244,6 @@ function showNational() {
                     <p class="text-[10px] uppercase opacity-60 mb-0.5">Población Total</p>
                     <p class="text-2xl font-black text-[#F6C453]">${(pn.POB1 || 0).toLocaleString()}</p>
                 </div>
-                <ul class="text-[12px] space-y-2 mb-4">
-                    <li class="flex justify-between items-center text-blue-300">
-                        <span class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-[#3B82F6]"></div> Hombres</span> 
-                        <b class="text-white">${(pn.POB84 || 0).toLocaleString()}</b>
-                    </li>
-                    <li class="flex justify-between items-center text-pink-300">
-                        <span class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-[#F472B6]"></div> Mujeres</span> 
-                        <b class="text-white">${(pn.POB42 || 0).toLocaleString()}</b>
-                    </li>
                 </ul>
                 <div class="relative h-44 w-full">
                     <canvas id="poblacionChartNacional"></canvas>

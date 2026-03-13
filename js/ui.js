@@ -472,12 +472,12 @@ function mostrarInfoMunicipio(cve, nombre) {
                     <div class="bg-blue-500/10 p-3 rounded-xl border border-blue-500/20 text-center group hover:bg-blue-500/20 transition-all">
                         <p class="opacity-50 uppercase mb-1 font-bold">Hombres</p>
                         <p class="text-base font-black text-blue-300">${(p.POB84 || 0).toLocaleString()}</p>
-                        <p class="text-[9px] text-blue-300/60 mt-1">${((p.POB84 / p.POB1) * 100).toFixed(1)}%</p>
+                        <p class="text-[12px] font-bold text-blue-300 mt-1">${((p.POB84 / p.POB1) * 100).toFixed(1)}%</p>
                     </div>
                     <div class="bg-pink-500/10 p-3 rounded-xl border border-pink-500/20 text-center group hover:bg-pink-500/20 transition-all">
                         <p class="opacity-50 uppercase mb-1 font-bold">Mujeres</p>
                         <p class="text-base font-black text-pink-300">${(p.POB42 || 0).toLocaleString()}</p>
-                        <p class="text-[9px] text-pink-300/60 mt-1">${((p.POB42 / p.POB1) * 100).toFixed(1)}%</p>
+                        <p class="text-[12px] font-bold text-pink-300 mt-1">${((p.POB42 / p.POB1) * 100).toFixed(1)}%</p>
                     </div>
                 </div>
             </div>
@@ -530,7 +530,7 @@ ui.renderMunicipioChart = function (ctx, data, isMini = false) {
             options: {
                 responsive: true,
                 layout: { 
-                    padding: isMini ? 10 : 8 
+                    padding: isMini ? 10 : 2 
                 },
                 plugins: {
                     legend: {
