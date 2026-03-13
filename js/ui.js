@@ -530,7 +530,7 @@ ui.renderMunicipioChart = function (ctx, data, isMini = false) {
             options: {
                 responsive: true,
                 layout: { 
-                    padding: isMini ? 10 : 25 
+                    padding: isMini ? 10 : 8 
                 },
                 plugins: {
                     legend: {

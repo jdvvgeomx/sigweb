@@ -450,55 +450,13 @@ function showMunicipalities() {
                     const pData = poblacion.municipios.find(x => normalizeStr(x.NOMGEO) === searchName);
 
                     if (pData) {
-                        const popupContent = `
-                            <div class="municipio-popup-content" style="min-width: 260px; padding: 5px; color: white !important;">
-                                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px; border-bottom: 2px solid #F6C453; padding-bottom: 8px;">
-                                    <h3 style="margin: 0; font-size: 16px; font-weight: 900; text-transform: uppercase; color: #F6C453; letter-spacing: 0.5px;">${f.properties.NOMGEO}</h3>
-                                    <i class="fas fa-chart-pie" style="margin-left:auto; opacity:0.6"></i>
-                                </div>
-                                
-                                <div style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 16px; margin-bottom: 15px; text-align: center; border: 1px solid rgba(255,255,255,0.1); box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);">
-                                    <p style="margin: 0; font-size: 10px; opacity: 0.6; text-transform: uppercase; font-weight: 700; letter-spacing: 1px;">Población Total</p>
-                                    <p style="margin: 0; font-size: 28px; font-weight: 900; color: #fff;">${(pData.POB1 || 0).toLocaleString()}</p>
-                                </div>
-
-                                <div style="height: 180px; width: 100%; position: relative; background: rgba(0,0,0,0.2); rounded: 12px; padding: 10px;">
-                                    <canvas id="popup-chart-${f.properties.CVEGEO}"></canvas>
-                                </div>
-
-                                <div style="margin-top: 15px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 9px; text-align: right; opacity: 0.5; font-weight: bold;">
-                                    <i class="fas fa-database text-[#F6C453]"></i> FUENTE: CENSO INEGI 2020
-                                </div>
-                            </div>
-                        `;
-
-                        const popup = L.popup({
-                            maxWidth: 350,
-                            className: 'municipio-chart-popup',
-                            offset: [0, -10]
-                        })
-                            .setLatLng(e.latlng)
-                            .setContent(popupContent);
-
-                        popup.on('add', () => {
-                            // Usar un pequeño delay para asegurar visibilidad y tamaño
-                            setTimeout(() => {
-                                const canvasId = `popup-chart-${f.properties.CVEGEO}`;
-                                const canvas = document.getElementById(canvasId);
-                                if (canvas && window.ui && window.ui.renderMunicipioChart) {
-                                    // Limpiar instancia previa si existe
-                                    if (typeof Chart !== 'undefined') {
-                                        const prev = Chart.getChart(canvas);
-                                        if (prev) prev.destroy();
-                                    }
-                                    window.ui.renderMunicipioChart(canvas, pData, true);
-                                } else {
-                                    console.error("Canvas o ui.renderMunicipioChart no disponibles para este popup");
-                                }
-                            }, 50);
-                        });
-
+                        // Comentado para quitar la gráfica del mapa y dejar solo la lateral
+                        /*
+                        const popupContent = `...`;
+                        const popup = L.popup({ ... });
+                        popup.on('add', () => { ... });
                         popup.openOn(map);
+                        */
                     } else {
                         l.bindPopup(`<div style="padding:10px"><b>${f.properties.NOMGEO}</b><br>Datos no disponibles.</div>`).openPopup();
                     }
