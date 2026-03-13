@@ -606,11 +606,6 @@ function setupSearchListeners() {
             applyGlowToLayer(highlightLayer);
             const bounds = L.geoJSON(feature).getBounds();
             try { map.flyToBounds(bounds, { padding: [40, 40], duration: 1.0 }); } catch (e) { map.fitBounds(bounds); }
-            const center = bounds.getCenter();
-            highlightLabel = L.marker(center, {
-                icon: L.divIcon({ className: 'etiquetaGlow', html: `<div class="labelBox fixedLabel">${item.nombre}</div>` }),
-                interactive: false
-            }).addTo(map);
             mostrarInfoMunicipio(item.cve, item.nombre);
         }
         input.value = item.nombre;

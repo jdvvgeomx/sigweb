@@ -1089,19 +1089,21 @@ main {
     white-space: nowrap;
 }
 
-.fixedLabel {
-    background: #1a2a6c; /* Azul cobalto sólido para máximo contraste */
-    color: #F6C453;
-    font-weight: 800;
-    font-size: 13px;
-    padding: 5px 12px;
-    border-radius: 8px;
-    border: 2px solid #F6C453;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.8);
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
-    transform: translate(-50%, -50%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    letter-spacing: 0.5px;
+.custom-municipio-tooltip {
+    background: #1a2a6c !important; /* Azul cobalto sólido */
+    color: #F6C453 !important;
+    font-weight: 800 !important;
+    font-size: 13px !important;
+    padding: 3px 8px !important; /* Ajustado al tamaño del texto */
+    border-radius: 6px !important;
+    border: 1.5px solid #F6C453 !important;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6) !important;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.8) !important;
+    white-space: nowrap !important;
+    opacity: 1 !important;
+}
+
+/* Forzar que el puntero del tooltip (flechita) desaparezca para que se vea más limpio */
+.leaflet-tooltip-top:before, .leaflet-tooltip-bottom:before, .leaflet-tooltip-left:before, .leaflet-tooltip-right:before {
+    display: none !important;
 }

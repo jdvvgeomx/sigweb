@@ -126,7 +126,7 @@ customPointsLayer = L.layerGroup().addTo(map);
 var highlightLayer = L.geoJSON(null, {
     style: {
         color: "#1affff",
-        weight: 8,
+        weight: 3, // Línea más delgada
         fillOpacity: 0, 
         opacity: 1,
         dashArray: null 
@@ -382,6 +382,14 @@ function showMunicipalities() {
                 return { fillColor: getColor(pob), weight: 1, opacity: 1, color: 'white', fillOpacity: 0.7 };
             },
             onEachFeature: (f, l) => {
+                // Etiqueta flotante que solo sale al pasar el puntero (Hover)
+                l.bindTooltip(f.properties.NOMGEO, {
+                    permanent: false,
+                    direction: 'center',
+                    className: 'custom-municipio-tooltip',
+                    sticky: true // Sigue al mouse
+                });
+
                 l.on('click', (e) => {
                     // --- NUEVA LÓGICA DE PRIORIDAD DE ANÁLISIS ---
 
@@ -419,12 +427,7 @@ function showMunicipalities() {
 
                     highlightLayer.addData(f);
                     applyGlowToLayer(highlightLayer);
-                    const center = l.getBounds().getCenter();
-
-                    highlightLabel = L.marker(center, {
-                        icon: L.divIcon({ className: 'etiquetaGlow', html: `<div class="labelBox fixedLabel">${f.properties.NOMGEO}</div>` }),
-                        interactive: false
-                    }).addTo(map);
+                    // Eliminamos la etiqueta fija highlightLabel que se creaba aquí
 
                     // Normalización robusta para búsqueda de población (igual que en ui.js)
                     const normalizeStr = str => str ? str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().trim() : "";
