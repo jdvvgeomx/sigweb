@@ -91,7 +91,7 @@ app.add_middleware(
 )
 
 # --- CARPETA DE UPLOADS ---
-UPLOAD_DIR = "static/uploads"
+UPLOAD_DIR = "uploads"
 if not os.path.exists(UPLOAD_DIR):
     os.makedirs(UPLOAD_DIR)
 
@@ -548,7 +548,7 @@ async def google_login(token_data: dict):
 
 @app.get("/api/v1/rutas")
 async def obtener_rutas():
-    routes_path = os.path.join("static", "data", "routes")
+    routes_path = os.path.join("data", "routes")
     files = []
     if os.path.exists(routes_path):
         files = [f for f in os.listdir(routes_path) if f.endswith('.geojson')]
