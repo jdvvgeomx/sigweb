@@ -244,6 +244,10 @@ class UserCreate(BaseModel):
     email: Optional[str] = None
     university: Optional[str] = None
 
+class PasswordChange(BaseModel):
+    old_password: str
+    new_password: str
+
 class Token(BaseModel):
     access_token: str
     token_type: str
@@ -553,6 +557,28 @@ async def google_login(token_data: dict):
         }
     except ValueError:
         raise HTTPException(status_code=400, detail="Token de Google inválido")
+
+@app.post("/api/v1/auth/change-password")
+async def change_password(data: PasswordChange, current_user: dict = Depends(get_current_user)):
+    with get_db_conn() as conn:
+        if not conn: raise HTTPException(status_code=503, detail="Base de datos no disponible")
+        cursor = conn.cursor()
+        
+        # Obtener contraseña actual del usuario
+        cursor.execute('SELECT password FROM users WHERE username = %s', (current_user['username'],))
+        user = cursor.fetchone()
+        
+        if not user or not pwd_context.verify(data.old_password, user['password']):
+            cursor.close()
+            raise HTTPException(status_code=400, detail="La contraseña actual es incorrecta")
+            
+        # Actualizar con la nueva contraseña
+        new_hashed = pwd_context.hash(data.new_password)
+        cursor.execute('UPDATE users SET password = %s WHERE username = %s', (new_hashed, current_user['username']))
+        conn.commit()
+        cursor.close()
+        
+    return {"status": "success", "message": "Contraseña actualizada correctamente"}
 
 # --- RUTAS DE LA API - RUTAS ---
 

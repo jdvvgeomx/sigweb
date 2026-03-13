@@ -113,10 +113,18 @@
                         class="bg-[#F6C453] text-[#006847] px-3 py-1 md:px-4 md:py-2 rounded-lg font-bold text-[10px] md:text-xs uppercase hover:bg-white transition-all shadow-md">
                         <i class="fas fa-sign-in-alt"></i> Login
                     </button>
-                    <div id="user-logged-in" class="hidden flex items-center gap-2">
-                        <span id="username-display" class="text-[10px] md:text-xs font-bold text-[#F6C453]"></span>
-                        <button onclick="logout()"
-                            class="text-white hover:text-red-400 text-[10px] md:text-xs underline p-1">Salir</button>
+                    <div id="user-logged-in" class="hidden flex items-center gap-1 md:gap-3">
+                        <span id="username-display" class="text-[10px] md:text-sm font-black text-[#F6C453] tracking-tight"></span>
+                        <div class="flex items-center gap-1">
+                            <button onclick="ui.openPasswordModal()" title="Cambiar Contraseña"
+                                class="text-[#F6C453]/70 hover:text-white transition-colors p-1">
+                                <i class="fas fa-key text-[10px] md:text-sm"></i>
+                            </button>
+                            <button onclick="logout()" title="Cerrar Sesión"
+                                class="text-white/60 hover:text-red-400 font-bold text-[10px] md:text-xs uppercase p-1">
+                                <i class="fas fa-sign-out-alt"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1108,6 +1116,37 @@
                     class="px-8 py-2.5 bg-[#006847] hover:bg-[#F6C453] hover:text-[#002b1c] text-white font-black rounded-xl transition-all shadow-lg text-sm">
                     <i class="fas fa-xmark mr-2"></i>Cerrar Ficha
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Cambio de Contraseña -->
+    <div id="modal-password"
+        class="fixed inset-0 bg-black/80 backdrop-blur-md z-[1200] hidden flex items-center justify-center p-4">
+        <div class="bg-[#1e3c72] w-full max-w-md rounded-3xl overflow-hidden shadow-2xl border border-white/20">
+            <div class="p-6 bg-gradient-to-r from-[#1e3c72] to-[#1a2a6c] flex justify-between items-center border-b border-white/10">
+                <h2 class="text-xl font-black text-[#F6C453] uppercase tracking-tighter">Seguridad</h2>
+                <button onclick="ui.closePasswordModal()" class="text-white/60 hover:text-white text-2xl">✕</button>
+            </div>
+            <div class="p-8">
+                <p class="text-xs text-white/60 mb-6 italic">Ingresa tu contraseña actual y la nueva clave que deseas usar.</p>
+                <form id="form-change-password" class="space-y-5">
+                    <div class="form-group mb-0">
+                        <label class="text-[10px] uppercase font-bold text-[#F6C453] tracking-widest mb-2 block">Contraseña Actual</label>
+                        <input type="password" id="old-pass" class="login-input !m-0" required placeholder="••••••••">
+                    </div>
+                    <div class="form-group mb-0">
+                        <label class="text-[10px] uppercase font-bold text-[#F6C453] tracking-widest mb-2 block">Nueva Contraseña</label>
+                        <input type="password" id="new-pass" class="login-input !m-0" required placeholder="••••••••">
+                    </div>
+                    <div class="form-group mb-0">
+                        <label class="text-[10px] uppercase font-bold text-[#F6C453] tracking-widest mb-2 block">Confirmar Nueva Contraseña</label>
+                        <input type="password" id="confirm-new-pass" class="login-input !m-0" required placeholder="••••••••">
+                    </div>
+                    <div class="pt-4">
+                        <button type="submit" class="login-submit">ACTUALIZAR CONTRASEÑA</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>

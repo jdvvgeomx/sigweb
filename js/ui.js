@@ -46,6 +46,16 @@ window.ui = {
         document.getElementById('modal-layers').classList.add('hidden');
     },
 
+    openPasswordModal: function () {
+        document.getElementById('modal-password').classList.remove('hidden');
+    },
+
+    closePasswordModal: function () {
+        document.getElementById('modal-password').classList.add('hidden');
+        const form = document.getElementById('form-change-password');
+        if (form) form.reset();
+    },
+
     // El resto de métodos se añaden abajo...
 };
 const ui = window.ui;
@@ -773,6 +783,39 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 btn.disabled = false;
                 btn.innerHTML = oldText;
+            };
+        }
+        const passForm = document.getElementById('form-change-password');
+        if (passForm) {
+            passForm.onsubmit = async (e) => {
+                e.preventDefault();
+                const oldPass = document.getElementById('old-pass').value;
+                const newPass = document.getElementById('new-pass').value;
+                const confPass = document.getElementById('confirm-new-pass').value;
+
+                if (newPass !== confPass) {
+                    showNotification('Las nuevas contraseñas no coinciden', 'error');
+                    return;
+                }
+
+                if (newPass.length < 6) {
+                    showNotification('La nueva contraseña debe tener al menos 6 caracteres', 'warning');
+                    return;
+                }
+
+                const btn = passForm.querySelector('button[type="submit"]');
+                const originalText = btn.textContent;
+                btn.disabled = true;
+                btn.textContent = 'ACTUALIZANDO...';
+
+                const success = await changePassword(oldPass, newPass);
+                
+                btn.disabled = false;
+                btn.textContent = originalText;
+                
+                if (success) {
+                    passForm.reset();
+                }
             };
         }
     }, 1000);

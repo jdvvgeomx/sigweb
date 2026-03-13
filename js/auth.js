@@ -75,18 +75,9 @@ function updateAuthUI() {
                 loggedInView.classList.remove('hidden');
                 loggedInView.style.display = 'flex';
 
-                const pic = localStorage.getItem('sig_picture');
                 const displayName = currentUser || localStorage.getItem('sig_user') || 'Usuario';
-
-                loggedInView.innerHTML = pic ? `
-                    <img src="${pic}" class="h-8 w-8 rounded-full border-2 border-[#F6C453] shadow-sm">
-                    <span class="text-[10px] md:text-xs font-bold text-[#F6C453]">${displayName}</span>
-                    <button onclick="logout()" class="text-white hover:text-red-400 text-[10px] md:text-xs underline p-1">Salir</button>
-                ` : `
-                    <i class="fas fa-user-circle text-[#F6C453] text-lg"></i>
-                    <span class="text-[10px] md:text-xs font-bold text-[#F6C453]">${displayName}</span>
-                    <button onclick="logout()" class="text-white hover:text-red-400 text-[10px] md:text-xs underline p-1">Salir</button>
-                `;
+                const displaySpan = document.getElementById('username-display');
+                if (displaySpan) displaySpan.textContent = displayName;
             }
 
             const adminBtn = document.getElementById('admin-panel-btn');
@@ -245,4 +236,28 @@ async function handleAuth(event) {
     }
 }
 
+async function changePassword(old_password, new_password) {
+    try {
+        const response = await apiFetch('/api/v1/auth/change-password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ old_password, new_password })
+        });
+
+        if (response.ok) {
+            showNotification('Contraseña actualizada con éxito', 'success');
+            if (window.ui) window.ui.closePasswordModal();
+            return true;
+        } else {
+            const error = await response.json();
+            showNotification(error.detail || 'Error al cambiar contraseña', 'error');
+            return false;
+        }
+    } catch (e) {
+        showNotification('Error de conexión', 'error');
+        return false;
+    }
+}
+
 window.handleAuth = handleAuth;
+window.changePassword = changePassword;
