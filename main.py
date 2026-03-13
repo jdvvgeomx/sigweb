@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Depends, status
+from fastapi import FastAPI, HTTPException, Depends, status, File, UploadFile, Form
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
@@ -14,16 +14,54 @@ import json
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 from fastapi.middleware.gzip import GZipMiddleware
-from fastapi import File, UploadFile
+# Importaciones de FastAPI consolidadas arriba
 import uuid
 import shutil
+import boto3
+from botocore.exceptions import NoCredentialsError
+from dotenv import load_dotenv
+
+# Cargar variables desde .env (en local)
+load_dotenv()
 
 # --- CONFIGURACIÓN DE SEGURIDAD ---
-# Se recomienda encarecidamente configurar estas variables en el panel de Render
-SECRET_KEY = os.environ.get("SECRET_KEY", "uveracruzana_super_secret_key_2026")
+SECRET_KEY = os.environ.get("SECRET_KEY")
+if not SECRET_KEY:
+    import secrets
+    # Generamos una llave aleatoria si no existe una definida en el entorno
+    SECRET_KEY = secrets.token_hex(32)
+    print("AVISO: Usando SECRET_KEY aleatoria (No persistente).")
+
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 # 1 día
 GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID") 
+
+# --- CONFIGURACIÓN DE S3 (STORAGE) ---
+AWS_ACCESS_KEY = os.environ.get("AWS_ACCESS_KEY_ID")
+AWS_SECRET_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
+AWS_BUCKET_NAME = os.environ.get("AWS_STORAGE_BUCKET_NAME")
+AWS_REGION = os.environ.get("AWS_S3_REGION", "us-east-1")
+# Endpoint opcional para servicios S3-compatibles (Supabase, Backblaze, etc.)
+AWS_ENDPOINT_URL = os.environ.get("AWS_S3_ENDPOINT_URL")
+
+s3_client = None
+if AWS_ACCESS_KEY and AWS_SECRET_KEY:
+    try:
+        from botocore.client import Config
+        s3_client = boto3.client(
+            's3',
+            aws_access_key_id=AWS_ACCESS_KEY.strip(),
+            aws_secret_access_key=AWS_SECRET_KEY.strip(),
+            region_name=AWS_REGION,
+            endpoint_url=AWS_ENDPOINT_URL,
+            config=Config(signature_version='s3v4')
+        )
+        print(f"S3 Storage configurado: {AWS_BUCKET_NAME}")
+    except Exception as e:
+        print(f"Error inicializando S3: {e}")
+        s3_client = None
+else:
+    print("S3 no configurado. Usando almacenamiento local.")
 
 pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/v1/auth/login")
@@ -34,9 +72,19 @@ app = FastAPI(title="SIG Web")
 app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 # --- CONFIGURACIÓN DE CORS ---
+# Agrega aquí tus dominios específicos cuando los tengas
+ALLOWED_ORIGINS = [
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+    "http://localhost:5500",
+    "https://sig-web-uv.onrender.com",
+    # Reemplaza con tu URL real de GitHub Pages si es diferente
+    "https://jdvvgeomx.github.io" 
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # Permite cualquier origen (GitHub Pages, localhost, etc.)
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -119,6 +167,7 @@ def init_db():
                 )
             ''')
             
+            # Tabla de Usuarios
             cursor.execute('''
                 CREATE TABLE IF NOT EXISTS users (
                     id SERIAL PRIMARY KEY,
@@ -131,8 +180,24 @@ def init_db():
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
             ''')
+
+            # Tabla de Capas de Datos (NUEVA)
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS layers (
+                    id SERIAL PRIMARY KEY,
+                    name TEXT NOT NULL,
+                    file_type TEXT NOT NULL, -- 'shp', 'csv', 'geojson'
+                    url TEXT NOT NULL,
+                    description TEXT,
+                    is_visible BOOLEAN DEFAULT true,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    created_by TEXT
+                )
+            ''')
             
-            admin_pass = pwd_context.hash("uv2026")
+            # Creamos el admin inicial con contraseña desde entorno o default local
+            raw_admin_pass = os.environ.get("ADMIN_PASSWORD", "uv2026")
+            admin_pass = pwd_context.hash(raw_admin_pass)
             cursor.execute('''
                 INSERT INTO users (username, password, full_name, email, university, role) 
                 VALUES (%s, %s, %s, %s, %s, %s)
@@ -273,14 +338,42 @@ async def upload_image(file: UploadFile = File(...), current_user: dict = Depend
     # Reiniciar el puntero del archivo para guardar
     await file.seek(0)
 
-    # Generar nombre único para evitar colisiones y ataques de Path Traversal
+    # Generar nombre único
     filename = f"{uuid.uuid4()}.{ext}"
-    file_path = os.path.join(UPLOAD_DIR, filename)
     
-    with open(file_path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
-        
-    return {"url": f"/uploads/{filename}"}
+    if s3_client:
+        try:
+            # Subir directamente a S3
+            s3_client.upload_fileobj(
+                file.file,
+                AWS_BUCKET_NAME,
+                filename,
+                ExtraArgs={'ACL': 'public-read', 'ContentType': file.content_type}
+            )
+            
+            # Construir URL pública
+            if AWS_ENDPOINT_URL:
+                # Caso Supabase / Custom S3
+                base_url = AWS_ENDPOINT_URL.replace("https://", f"https://{AWS_BUCKET_NAME}.")
+                # Algunos proveedores requieren un formato distinto, este es el común:
+                file_url = f"{AWS_ENDPOINT_URL}/{AWS_BUCKET_NAME}/{filename}"
+            else:
+                # Caso AWS estándar
+                file_url = f"https://{AWS_BUCKET_NAME}.s3.{AWS_REGION}.amazonaws.com/{filename}"
+                
+            return {"url": file_url}
+            
+        except NoCredentialsError:
+            raise HTTPException(status_code=500, detail="Error de credenciales en S3")
+        except Exception as e:
+            print(f"Error S3: {e}")
+            raise HTTPException(status_code=500, detail="Error al subir a S3")
+    else:
+        # Fallback LOCAL
+        file_path = os.path.join(UPLOAD_DIR, filename)
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+        return {"url": f"/uploads/{filename}"}
 
 @app.post("/api/v1/points")
 async def save_point(point: Point, current_user: dict = Depends(get_current_user)):
@@ -324,6 +417,29 @@ async def get_stats(current_user: dict = Depends(get_current_user)):
         rows = cursor.fetchall()
         cursor.close()
     return [dict(row) for row in rows]
+
+@app.put("/api/v1/points/{point_id}")
+async def update_point(point_id: int, point: Point, current_user: dict = Depends(get_current_user)):
+    with get_db_conn() as conn:
+        if not conn: raise HTTPException(status_code=503, detail="BD no disponible")
+        cursor = conn.cursor()
+        # Verificar que el punto existe y pertenece al usuario (o es admin)
+        cursor.execute('SELECT created_by FROM points WHERE id = %s', (point_id,))
+        row = cursor.fetchone()
+        if not row:
+            raise HTTPException(status_code=404, detail="Punto no encontrado")
+        if current_user.get("role") != "admin" and row["created_by"] != current_user["username"]:
+            raise HTTPException(status_code=403, detail="No tienes permiso para editar este punto")
+        cursor.execute('''
+            UPDATE points
+            SET name=%s, category=%s, subcategory=%s, description=%s, address=%s,
+                lat=%s, lng=%s, image_url=%s
+            WHERE id=%s
+        ''', (point.name, point.category, point.subcategory, point.description,
+              point.address, point.lat, point.lng, point.image_url, point_id))
+        conn.commit()
+        cursor.close()
+    return {"status": "success", "id": point_id}
 
 @app.delete("/api/v1/points/{point_id}")
 async def delete_point(point_id: int, current_user: dict = Depends(get_current_user)):
@@ -438,9 +554,117 @@ async def obtener_rutas():
         files = [f for f in os.listdir(routes_path) if f.endswith('.geojson')]
     return {"status": "success", "count": len(files), "files": files}
 
-# Montamos la carpeta static
+# --- GESTIÓN DE CAPAS DE DATOS ---
+
+@app.post("/api/v1/layers/upload")
+async def upload_layer(
+    file: UploadFile = File(...),
+    name: str = Form(...),
+    description: Optional[str] = Form(None),
+    current_user: dict = Depends(get_current_user)
+):
+    # Validar extensión
+    ext = file.filename.split('.')[-1].lower()
+    if ext not in ['zip', 'csv', 'geojson', 'json']:
+        raise HTTPException(status_code=400, detail="Formato de archivo no permitido. Use .zip (para SHP), .csv o .geojson")
+
+    file_type = 'shp' if ext == 'zip' else ext
+    if ext == 'json': file_type = 'geojson'
+
+    filename = f"layers/{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}_{file.filename}"
+    file_url = f"/uploads/{filename}"
+
+    try:
+        # TEMPORAL: Usar local primero para diagnóstico
+        print("DEBUG: Usando almacenamiento local temporalmente para descartar errores de AWS.")
+        os.makedirs(os.path.join(UPLOAD_DIR, "layers"), exist_ok=True)
+        local_filename = f"layers/{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}_{file.filename}"
+        local_path = os.path.join(UPLOAD_DIR, local_filename)
+        
+        with open(local_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+        
+        file_url = f"/uploads/{local_filename}"
+
+        # Intentar S3 solo si el local funcionó y solo como respaldo por ahora
+        if s3_client:
+            print(f"DEBUG: Intentando respaldo en S3...")
+            try:
+                # Reiniciar el puntero del archivo para S3
+                file.file.seek(0)
+                s3_client.upload_fileobj(file.file, AWS_BUCKET_NAME, local_filename)
+                file_url = f"https://{AWS_BUCKET_NAME}.s3.{AWS_REGION}.amazonaws.com/{local_filename}"
+                print("DEBUG: Subida a S3 exitosa.")
+            except Exception as s3e:
+                print(f"DEBUG: Fallo S3 pero seguiremos con local: {s3e}")
+        
+        # Guardar en Base de Datos
+        with get_db_conn() as conn:
+            cursor = conn.cursor()
+            cursor.execute('''
+                INSERT INTO layers (name, file_type, url, description, created_by)
+                VALUES (%s, %s, %s, %s, %s)
+                RETURNING id
+            ''', (name, file_type, file_url, description, current_user['username']))
+            layer_id = cursor.fetchone()['id']
+            conn.commit()
+            cursor.close()
+
+        return {"status": "success", "layer_id": layer_id, "url": file_url}
+
+    except Exception as e:
+        print(f"Error subiendo capa: {e}")
+        raise HTTPException(status_code=500, detail="Error interno al procesar el archivo")
+
+@app.get("/api/v1/layers")
+async def list_layers():
+    with get_db_conn() as conn:
+        if not conn: return {"layers": []}
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM layers WHERE is_visible = true ORDER BY created_at DESC")
+        layers = cursor.fetchall()
+        cursor.close()
+    return {"layers": [dict(l) for l in layers]}
+
+# Montamos carpetas de recursos
+app.mount("/js", StaticFiles(directory="js"), name="js")
+app.mount("/css", StaticFiles(directory="css"), name="css")
 app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
-app.mount("/", StaticFiles(directory="static", html=True), name="static")
+
+# Ruta para servir el index.html desde la raíz (para compatibilidad con GitHub Pages)
+@app.get("/")
+async def read_index():
+    return FileResponse('index.html')
+
+# Servir archivos GeoJSON y JSON desde la raíz
+@app.get("/{filename}.geojson")
+async def get_geojson(filename: str):
+    path = f"{filename}.geojson"
+    if os.path.exists(path):
+        return FileResponse(path)
+    raise HTTPException(status_code=404)
+
+@app.get("/{filename}.json")
+async def get_json(filename: str):
+    path = f"{filename}.json"
+    if os.path.exists(path):
+        return FileResponse(path)
+    raise HTTPException(status_code=404)
+
+# Imágenes sueltas en la raíz
+@app.get("/{filename}.png")
+async def get_png(filename: str):
+    path = f"{filename}.png"
+    if os.path.exists(path):
+        return FileResponse(path)
+    raise HTTPException(status_code=404)
+
+@app.get("/{filename}.jpg")
+async def get_jpg(filename: str):
+    path = f"{filename}.jpg"
+    if os.path.exists(path):
+        return FileResponse(path)
+    raise HTTPException(status_code=404)
 
 if __name__ == "__main__":
     import uvicorn
