@@ -195,14 +195,24 @@ def init_db():
                 )
             ''')
             
-            # Creamos el admin inicial con contraseña desde entorno o default local
+            # Creamos el admin inicial
             raw_admin_pass = os.environ.get("ADMIN_PASSWORD", "uv2026")
             admin_pass = pwd_context.hash(raw_admin_pass)
+            
+            # 1. Admin general
             cursor.execute('''
                 INSERT INTO users (username, password, full_name, email, university, role) 
                 VALUES (%s, %s, %s, %s, %s, %s)
                 ON CONFLICT (username) DO NOTHING
             ''', ('admin', admin_pass, 'Administrador SIG', 'admin@uv.mx', 'Universidad Veracruzana', 'admin'))
+
+            # 2. Director: Angel Fernando Arguello
+            director_pass = pwd_context.hash("Arguello2026")
+            cursor.execute('''
+                INSERT INTO users (username, password, full_name, email, university, role) 
+                VALUES (%s, %s, %s, %s, %s, %s)
+                ON CONFLICT (username) DO NOTHING
+            ''', ('angel.arguello', director_pass, 'Angel Fernando Arguello', 'a_arguello@uv.mx', 'Universidad Veracruzana', 'admin'))
             
             conn.commit()
             cursor.close()
