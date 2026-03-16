@@ -195,17 +195,6 @@ def init_db():
                 )
             ''')
             
-            # Tabla Unificada de Archivos Físicos (NUEVA) para evitar S3
-            cursor.execute('''
-                CREATE TABLE IF NOT EXISTS files_storage (
-                    file_id TEXT PRIMARY KEY,
-                    file_name TEXT,
-                    content_type TEXT,
-                    file_data BYTEA,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                )
-            ''')
-            
             # Creamos el admin inicial
             raw_admin_pass = os.environ.get("ADMIN_PASSWORD", "uv2026")
             admin_pass = pwd_context.hash(raw_admin_pass)
@@ -355,34 +344,49 @@ async def upload_image(file: UploadFile = File(...), current_user: dict = Depend
 
     # 2. Validar tamaño (Ejem: 5MB máx)
     MAX_FILE_SIZE = 5 * 1024 * 1024 # 5MB
+    # Nota: Spooling del archivo para leer tamaño
     content = await file.read()
     if len(content) > MAX_FILE_SIZE:
         raise HTTPException(status_code=400, detail="La imagen es demasiado grande. Máximo 5MB.")
     
-    # Generar ID y nombre
-    file_id = str(uuid.uuid4())
-    filename = f"{file_id}.{ext}"
+    # Reiniciar el puntero del archivo para guardar
+    await file.seek(0)
+
+    # Generar nombre único
+    filename = f"{uuid.uuid4()}.{ext}"
     
-    # Guardar en la Base de Datos (Supabase) en la tabla files_storage
-    try:
-        with get_db_conn() as conn:
-            if not conn: raise HTTPException(status_code=503, detail="BD no disponible")
-            cursor = conn.cursor()
-            cursor.execute('''
-                INSERT INTO files_storage (file_id, file_name, content_type, file_data)
-                VALUES (%s, %s, %s, %s)
-            ''', (file_id, filename, file.content_type, content))
-            conn.commit()
-            cursor.close()
+    if s3_client:
+        try:
+            # Subir directamente a S3
+            s3_client.upload_fileobj(
+                file.file,
+                AWS_BUCKET_NAME,
+                filename,
+                ExtraArgs={'ACL': 'public-read', 'ContentType': file.content_type}
+            )
             
-            file_url = f"/api/v1/files/{file_id}"
+            # Construir URL pública
+            if AWS_ENDPOINT_URL:
+                # Caso Supabase / Custom S3
+                base_url = AWS_ENDPOINT_URL.replace("https://", f"https://{AWS_BUCKET_NAME}.")
+                # Algunos proveedores requieren un formato distinto, este es el común:
+                file_url = f"{AWS_ENDPOINT_URL}/{AWS_BUCKET_NAME}/{filename}"
+            else:
+                # Caso AWS estándar
+                file_url = f"https://{AWS_BUCKET_NAME}.s3.{AWS_REGION}.amazonaws.com/{filename}"
+                
             return {"url": file_url}
-    except Exception as e:
-        print(f"Error subiendo imagen a la DB: {e}")
-        # Call back LOCAL
+            
+        except NoCredentialsError:
+            raise HTTPException(status_code=500, detail="Error de credenciales en S3")
+        except Exception as e:
+            print(f"Error S3: {e}")
+            raise HTTPException(status_code=500, detail="Error al subir a S3")
+    else:
+        # Fallback LOCAL
         file_path = os.path.join(UPLOAD_DIR, filename)
         with open(file_path, "wb") as buffer:
-            buffer.write(content)
+            shutil.copyfileobj(file.file, buffer)
         return {"url": f"/uploads/{filename}"}
 
 @app.post("/api/v1/points")
@@ -603,26 +607,36 @@ async def upload_layer(
     file_type = 'shp' if ext == 'zip' else ext
     if ext == 'json': file_type = 'geojson'
 
-    file_id = f"layer_{str(uuid.uuid4())}"
-    filename = f"{file_id}_{file.filename}"
-    
+    filename = f"layers/{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}_{file.filename}"
+    file_url = f"/uploads/{filename}"
+
     try:
-        content = await file.read()
+        # TEMPORAL: Usar local primero para diagnóstico
+        print("DEBUG: Usando almacenamiento local temporalmente para descartar errores de AWS.")
+        os.makedirs(os.path.join(UPLOAD_DIR, "layers"), exist_ok=True)
+        local_filename = f"layers/{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}_{file.filename}"
+        local_path = os.path.join(UPLOAD_DIR, local_filename)
         
-        # 1. Guardar en Base de Datos (Storage de Files Unificado) principal
+        with open(local_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+        
+        file_url = f"/uploads/{local_filename}"
+
+        # Intentar S3 solo si el local funcionó y solo como respaldo por ahora
+        if s3_client:
+            print(f"DEBUG: Intentando respaldo en S3...")
+            try:
+                # Reiniciar el puntero del archivo para S3
+                file.file.seek(0)
+                s3_client.upload_fileobj(file.file, AWS_BUCKET_NAME, local_filename)
+                file_url = f"https://{AWS_BUCKET_NAME}.s3.{AWS_REGION}.amazonaws.com/{local_filename}"
+                print("DEBUG: Subida a S3 exitosa.")
+            except Exception as s3e:
+                print(f"DEBUG: Fallo S3 pero seguiremos con local: {s3e}")
+        
+        # Guardar en Base de Datos
         with get_db_conn() as conn:
-            if not conn: raise HTTPException(status_code=503, detail="BD no disponible")
             cursor = conn.cursor()
-            
-            # Insertar en files_storage
-            cursor.execute('''
-                INSERT INTO files_storage (file_id, file_name, content_type, file_data)
-                VALUES (%s, %s, %s, %s)
-            ''', (file_id, filename, file.content_type, content))
-            
-            file_url = f"/api/v1/files/{file_id}"
-            
-            # 2. Guardar en tabla de capas
             cursor.execute('''
                 INSERT INTO layers (name, file_type, url, description, created_by)
                 VALUES (%s, %s, %s, %s, %s)
@@ -631,15 +645,6 @@ async def upload_layer(
             layer_id = cursor.fetchone()['id']
             conn.commit()
             cursor.close()
-
-        # Guardar archivo local como caché secundario para evitar recargas desde DB
-        try:
-            os.makedirs(os.path.join(UPLOAD_DIR, "layers"), exist_ok=True)
-            local_path = os.path.join(UPLOAD_DIR, "layers", filename)
-            with open(local_path, "wb") as buffer:
-                buffer.write(content)
-        except Exception as e:
-            print(f"Aviso caché local: {e}")
 
         return {"status": "success", "layer_id": layer_id, "url": file_url}
 
@@ -656,33 +661,6 @@ async def list_layers():
         layers = cursor.fetchall()
         cursor.close()
     return {"layers": [dict(l) for l in layers]}
-
-import io
-from fastapi.responses import StreamingResponse
-
-@app.get("/api/v1/files/{file_id}")
-async def download_file(file_id: str):
-    with get_db_conn() as conn:
-        if not conn: raise HTTPException(status_code=503, detail="BD no disponible")
-        cursor = conn.cursor()
-        cursor.execute("SELECT file_name, content_type, file_data FROM files_storage WHERE file_id = %s", (file_id,))
-        row = cursor.fetchone()
-        cursor.close()
-        
-        if not row or not row['file_data']:
-            raise HTTPException(status_code=404, detail="Archivo no encontrado")
-        
-        # Enviamos la data cruda desde memoria (base de datos)
-        # Esto sirve los Shapefiles (*.zip), GeoJSONs, e imágenes directamente 
-        # con su MIME type al explorador o al mapa.
-        ct = row['content_type'] if row['content_type'] else "application/octet-stream"
-        return StreamingResponse(
-            io.BytesIO(row['file_data']), 
-            media_type=ct,
-            headers={
-                "Content-Disposition": f'inline; filename="{row["file_name"]}"'
-            }
-        )
 
 # Montamos carpetas de recursos
 app.mount("/js", StaticFiles(directory="js"), name="js")
