@@ -682,9 +682,12 @@ Object.assign(ui, {
         list.innerHTML = data.layers.map(layer => {
             const icon = layer.file_type === 'shp' ? 'fa-file-zipper' : (layer.file_type === 'csv' ? 'fa-file-csv' : 'fa-file-code');
             const isActive = window.mapLayers && window.mapLayers[layer.id] ? 'bg-[#F6C453] text-[#1a2a6c]' : 'bg-white/10 text-white';
+            const currentUser = localStorage.getItem('username');
+            const isAdmin = localStorage.getItem('user_role') === 'admin';
+            const canDelete = (currentUser === layer.created_by || isAdmin);
 
             return `
-                <div class="flex flex-col gap-2 p-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all">
+                <div class="flex flex-col gap-2 p-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all relative group">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-3">
                             <div class="w-10 h-10 rounded-full flex items-center justify-center bg-black/30">
@@ -695,10 +698,19 @@ Object.assign(ui, {
                                 <p class="text-[10px] opacity-60 uppercase">${layer.file_type} • ${new Date(layer.created_at).toLocaleDateString()}</p>
                             </div>
                         </div>
-                        <button onclick="ui.toggleLayer('${layer.id}', '${layer.url}', '${layer.file_type}')" 
-                            class="px-4 py-1.5 rounded-full text-[10px] font-bold transition-all ${isActive}">
-                            ${window.mapLayers && window.mapLayers[layer.id] ? 'QUITAR' : 'VISUALIZAR'}
-                        </button>
+                        <div class="flex items-center gap-2">
+                            <button onclick="ui.toggleLayer('${layer.id}', '${layer.url}', '${layer.file_type}')" 
+                                class="px-4 py-1.5 rounded-full text-[10px] font-bold transition-all ${isActive}">
+                                ${window.mapLayers && window.mapLayers[layer.id] ? 'QUITAR' : 'VISUALIZAR'}
+                            </button>
+                            ${canDelete ? `
+                                <button onclick="ui.deleteLayer('${layer.id}', '${layer.name}')" 
+                                    class="w-8 h-8 rounded-full bg-red-500/20 text-red-500 hover:bg-red-500 hover:text-white transition-all flex items-center justify-center"
+                                    title="Eliminar capa">
+                                    <i class="fas fa-trash-can text-[10px]"></i>
+                                </button>
+                            ` : ''}
+                        </div>
                     </div>
                     
                     ${window.mapLayers && window.mapLayers[layer.id] ? `
@@ -751,6 +763,38 @@ Object.assign(ui, {
             }
         }
         this.loadLayers(); // Refrescar botones
+    },
+
+    deleteLayer: async function (id, name) {
+        if (!confirm(`¿Estás seguro de que deseas eliminar la capa "${name}"? Esta acción no se puede deshacer.`)) {
+            return;
+        }
+
+        try {
+            const token = localStorage.getItem('token');
+            const res = await fetch(`${API_BASE_URL}/layers/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (res.ok) {
+                // Quitar del mapa si está activa
+                if (window.mapLayers && window.mapLayers[id]) {
+                    map.removeLayer(window.mapLayers[id]);
+                    delete window.mapLayers[id];
+                }
+                showNotification('Capa eliminada con éxito', 'success');
+                this.loadLayers();
+            } else {
+                const err = await res.json();
+                showNotification(`Error: ${err.detail || 'No se pudo eliminar la capa'}`, 'error');
+            }
+        } catch (error) {
+            console.error('Error deleting layer:', error);
+            showNotification('Error de conexión al eliminar la capa', 'error');
+        }
     }
 });
 
