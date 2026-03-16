@@ -357,7 +357,7 @@ async def upload_image(file: UploadFile = File(...), current_user: dict = Depend
     
     if s3_client:
         try:
-            # Subir directamente a S3
+            # Subir directamente a S3 con ACL de lectura pública
             s3_client.upload_fileobj(
                 file.file,
                 AWS_BUCKET_NAME,
@@ -365,15 +365,11 @@ async def upload_image(file: UploadFile = File(...), current_user: dict = Depend
                 ExtraArgs={'ACL': 'public-read', 'ContentType': file.content_type}
             )
             
-            # Construir URL pública
-            if AWS_ENDPOINT_URL:
-                # Caso Supabase / Custom S3
-                base_url = AWS_ENDPOINT_URL.replace("https://", f"https://{AWS_BUCKET_NAME}.")
-                # Algunos proveedores requieren un formato distinto, este es el común:
-                file_url = f"{AWS_ENDPOINT_URL}/{AWS_BUCKET_NAME}/{filename}"
-            else:
-                # Caso AWS estándar
-                file_url = f"https://{AWS_BUCKET_NAME}.s3.{AWS_REGION}.amazonaws.com/{filename}"
+            # Construir URL pública (formato universal)
+            file_url = f"https://{AWS_BUCKET_NAME}.s3.{AWS_REGION}.amazonaws.com/{filename}"
+            if AWS_REGION == "us-east-1":
+                # us-east-1 a veces usa este formato directo
+                file_url = f"https://{AWS_BUCKET_NAME}.s3.amazonaws.com/{filename}"
                 
             return {"url": file_url}
             
@@ -381,7 +377,12 @@ async def upload_image(file: UploadFile = File(...), current_user: dict = Depend
             raise HTTPException(status_code=500, detail="Error de credenciales en S3")
         except Exception as e:
             print(f"Error S3: {e}")
-            raise HTTPException(status_code=500, detail="Error al subir a S3")
+            # Intentar fallback local si falla S3
+            await file.seek(0)
+            file_path = os.path.join(UPLOAD_DIR, filename)
+            with open(file_path, "wb") as buffer:
+                shutil.copyfileobj(file.file, buffer)
+            return {"url": f"/uploads/{filename}"}
     else:
         # Fallback LOCAL
         file_path = os.path.join(UPLOAD_DIR, filename)
@@ -624,15 +625,27 @@ async def upload_layer(
 
         # Intentar S3 solo si el local funcionó y solo como respaldo por ahora
         if s3_client:
-            print(f"DEBUG: Intentando respaldo en S3...")
+            print(f"DEBUG: Intentando respaldo en S3 a bucket {AWS_BUCKET_NAME}...")
             try:
                 # Reiniciar el puntero del archivo para S3
                 file.file.seek(0)
-                s3_client.upload_fileobj(file.file, AWS_BUCKET_NAME, local_filename)
-                file_url = f"https://{AWS_BUCKET_NAME}.s3.{AWS_REGION}.amazonaws.com/{local_filename}"
-                print("DEBUG: Subida a S3 exitosa.")
+                s3_client.upload_fileobj(
+                    file.file, 
+                    AWS_BUCKET_NAME, 
+                    local_filename,
+                    ExtraArgs={'ACL': 'public-read'} # Asegurar que sea público
+                )
+                
+                # URL preferida para us-east-1
+                if AWS_REGION == "us-east-1":
+                    file_url = f"https://{AWS_BUCKET_NAME}.s3.amazonaws.com/{local_filename}"
+                else:
+                    file_url = f"https://{AWS_BUCKET_NAME}.s3.{AWS_REGION}.amazonaws.com/{local_filename}"
+                
+                print(f"DEBUG: Subida a S3 exitosa: {file_url}")
             except Exception as s3e:
-                print(f"DEBUG: Fallo S3 pero seguiremos con local: {s3e}")
+                print(f"DEBUG: Fallo S3: {s3e}")
+                # El file_url se queda como el local f"/uploads/{local_filename}"
         
         # Guardar en Base de Datos
         with get_db_conn() as conn:
