@@ -636,6 +636,7 @@ window.mapLayers = {};
 async function loadAndShowLayer(id, url, type) {
     try {
         let geojson = null;
+        url = typeof getFullUrl === 'function' ? getFullUrl(url) : url;
 
         if (type === 'geojson') {
             const res = await fetch(url);
