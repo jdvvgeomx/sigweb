@@ -699,7 +699,11 @@ async function loadAndShowLayer(id, url, type) {
             return layer;
         }
     } catch (error) {
-        console.error('❌ Error procesando capa espacial:', error);
+        console.error('❌ Error procesando capa espacial:', {
+            url: url,
+            type: type,
+            error: error
+        });
         return null;
     }
 }
