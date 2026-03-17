@@ -56,53 +56,6 @@ window.ui = {
         if (form) form.reset();
     },
 
-    openRecoveryModal: async function() {
-        document.getElementById('recovery-modal').classList.remove('hidden');
-        await this.loadRecoveryRequests();
-    },
-
-    closeRecoveryModal: function() {
-        document.getElementById('recovery-modal').classList.add('hidden');
-    },
-
-    loadRecoveryRequests: async function() {
-        const tbody = document.getElementById('recovery-table-body');
-        if (!tbody) return;
-        tbody.innerHTML = '<tr><td colspan="4" class="p-8 text-center"><i class="fas fa-spinner fa-spin mr-2"></i> Cargando solicitudes...</td></tr>';
-        
-        try {
-            const res = await fetchWithAuth('/api/v1/auth/recovery-requests');
-            if (res.ok) {
-                const data = await res.json();
-                this.fillRecoveryTable(data);
-            } else {
-                showNotification('Error al cargar solicitudes', 'error');
-            }
-        } catch (error) {
-            console.error('Error loading recovery requests:', error);
-            showNotification('Error de conexión', 'error');
-        }
-    },
-
-    fillRecoveryTable: function(data) {
-        const tbody = document.getElementById('recovery-table-body');
-        if (!tbody) return;
-        
-        if (data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="4" class="p-8 text-center text-white/40 italic">No hay solicitudes pendientes</td></tr>';
-            return;
-        }
-
-        tbody.innerHTML = data.map(r => `
-            <tr class="bg-white/5 hover:bg-white/10 transition-colors border-b border-white/5">
-                <td class="p-4 text-[10px] opacity-70">${new Date(r.created_at).toLocaleString()}</td>
-                <td class="p-4 font-bold text-[#F6C453]">${r.username}</td>
-                <td class="p-4">${r.full_name || 'N/A'}</td>
-                <td class="p-4">${r.email || 'N/A'}</td>
-            </tr>
-        `).join('');
-    },
-
     // El resto de métodos se añaden abajo...
 };
 const ui = window.ui;
@@ -844,46 +797,6 @@ Object.assign(ui, {
         }
     },
 
-    openForgotPassword: function() {
-        document.getElementById('modal-forgot-password').classList.remove('hidden');
-    },
-
-    closeForgotPassword: function() {
-        document.getElementById('modal-forgot-password').classList.add('hidden');
-    },
-
-    handleForgotPassword: async function(e) {
-        e.preventDefault();
-        const userIdentifier = document.getElementById('forgot-user').value;
-        const btn = e.target.querySelector('button[type="submit"]');
-        const oldText = btn.innerHTML;
-        
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ENVIANDO...';
-
-        try {
-            const res = await fetch(`${API_BASE_URL}/api/v1/auth/forgot-password`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ user_identifier: userIdentifier })
-            });
-            const data = await res.json();
-
-            if (res.ok) {
-                showNotification(data.message, 'success');
-                this.closeForgotPassword();
-                closeLoginModal();
-            } else {
-                showNotification(data.detail || 'Error al enviar la solicitud', 'error');
-            }
-        } catch (error) {
-            console.error('Error in forgot password:', error);
-            showNotification('Error de conexión', 'error');
-        } finally {
-            btn.disabled = false;
-            btn.innerHTML = oldText;
-        }
-    }
 });
 
 // Listener para el formulario de subida

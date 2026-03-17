@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Depends, status, File, UploadFile, Form, BackgroundTasks
+from fastapi import FastAPI, HTTPException, Depends, status, File, UploadFile, Form
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
@@ -64,16 +64,7 @@ if AWS_ACCESS_KEY and AWS_SECRET_KEY:
 else:
     print("S3 no configurado. Usando almacenamiento local.")
 
-# --- CONFIGURACIÓN DE CORREO (SMTP) ---
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-
-SMTP_SERVER = os.environ.get("SMTP_SERVER", "smtp.gmail.com").strip()
-SMTP_PORT = int(os.environ.get("SMTP_PORT", 465)) # Cambiado a 465 por defecto para SSL
-SMTP_USER = os.environ.get("SMTP_USER", "adminofizeus@gmail.com").strip()
-SMTP_PASS = os.environ.get("SMTP_PASSWORD", "").strip() 
-ADMIN_NOTIFY_EMAIL = os.environ.get("ADMIN_NOTIFY_EMAIL", "adminofizeus@gmail.com").strip()
+# --- CONFIGURACIÓN DE SEGURIDAD CONTINÚA ---
 
 pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/v1/auth/login")
@@ -207,18 +198,6 @@ def init_db():
                 )
             ''')
 
-            # Tabla de Solicitudes de Recuperación (Respaldo si falla el correo)
-            cursor.execute('''
-                CREATE TABLE IF NOT EXISTS recovery_requests (
-                    id SERIAL PRIMARY KEY,
-                    username TEXT NOT NULL,
-                    full_name TEXT,
-                    email TEXT,
-                    status TEXT DEFAULT 'pending',
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                )
-            ''')
-            
             # Creamos el admin inicial
             raw_admin_pass = os.environ.get("ADMIN_PASSWORD", "uv2026")
             admin_pass = pwd_context.hash(raw_admin_pass)
@@ -271,9 +250,6 @@ class UserCreate(BaseModel):
 class PasswordChange(BaseModel):
     old_password: str
     new_password: str
-
-class ForgotPassword(BaseModel):
-    user_identifier: str
 
 class Token(BaseModel):
     access_token: str
@@ -517,103 +493,6 @@ async def register(user: UserCreate):
             raise HTTPException(status_code=400, detail="El usuario ya existe")
         finally:
             cursor.close() # Changed from `return user` to `cursor.close()` to maintain correctness
-
-def send_recovery_email(user_data: dict, msg_body: str):
-    """Función para enviar correo en segundo plano para no bloquear al usuario."""
-    if not SMTP_PASS:
-        print(f"DEBUG: Recuperación para {user_data['username']} guardada en DB (SMTP no configurado).")
-        return
-
-    try:
-        msg = MIMEMultipart()
-        msg['From'] = SMTP_USER
-        msg['To'] = ADMIN_NOTIFY_EMAIL
-        msg['Subject'] = f"🚀 SOLICITUD DE RECUPERACIÓN: {user_data['username']}"
-        msg.attach(MIMEText(msg_body, 'plain'))
-
-        print(f"DEBUG: Intentando envío en segundo plano para {user_data['username']}...")
-        context = ssl.create_default_context()
-        # Intentamos SSL (465) primero
-        try:
-            with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context, timeout=10) as server:
-                server.login(SMTP_USER, SMTP_PASS)
-                server.send_message(msg)
-            print(f"DEBUG: Correo enviado con éxito (SSL).")
-        except Exception as e:
-            print(f"DEBUG: Fallo SSL, intentando TLS (587)... Error: {e}")
-            try:
-                with smtplib.SMTP("smtp.gmail.com", 587, timeout=10) as server:
-                    server.starttls()
-                    server.login(SMTP_USER, SMTP_PASS)
-                    server.send_message(msg)
-                print(f"DEBUG: Correo enviado con éxito (TLS).")
-            except Exception as e2:
-                print(f"DEBUG: El envío de correo falló definitivamente: {e2}")
-            
-    except Exception as e:
-        print(f"DEBUG: Error preparando mensaje: {e}")
-
-@app.post("/api/v1/auth/forgot-password")
-async def forgot_password(request: ForgotPassword, background_tasks: BackgroundTasks):
-    # 1. Buscar si el usuario existe
-    user_data = None
-    with get_db_conn() as conn:
-        if conn:
-            cursor = conn.cursor()
-            cursor.execute("SELECT username, full_name, email FROM users WHERE username = %s OR email = %s", 
-                         (request.user_identifier, request.user_identifier))
-            user_data = cursor.fetchone()
-            cursor.close()
-
-    if not user_data:
-        # Por seguridad no decimos si existe o no
-        return {"status": "success", "message": "Si el usuario existe, el administrador será notificado."}
-
-    # 2. Guardar en Base de Datos (Inmediato)
-    try:
-        with get_db_conn() as conn:
-            if conn:
-                cursor = conn.cursor()
-                cursor.execute("INSERT INTO recovery_requests (username, full_name, email) VALUES (%s, %s, %s)",
-                             (user_data['username'], user_data['full_name'], user_data['email']))
-                conn.commit()
-                cursor.close()
-    except Exception as dbe:
-        print(f"Error guardando en BD: {dbe}")
-
-    # 3. Preparar mensaje y lanzar envío en segundo plano
-    msg_body = f"""
-    Hola Administrador,
-    
-    El usuario {user_data['full_name']} ({user_data['username']}) ha solicitado recuperar su contraseña en el Geoportal Interactivo.
-    
-    Detalles:
-    - Usuario: {user_data['username']}
-    - Correo registrado del usuario: {user_data['email']}
-    - Fecha: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-    
-    Por favor, contacta con el usuario para realizar el cambio manual.
-    """
-    
-    background_tasks.add_task(send_recovery_email, user_data, msg_body)
-
-    return {
-        "status": "success", 
-        "message": "Tu solicitud ha sido registrada. El administrador revisará tu cuenta pronto."
-    }
-
-@app.get("/api/v1/auth/recovery-requests")
-async def get_recovery_requests(current_user: dict = Depends(get_current_user)):
-    if current_user['role'] != 'admin':
-        raise HTTPException(status_code=403, detail="No autorizado")
-    
-    with get_db_conn() as conn:
-        if not conn: return []
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM recovery_requests ORDER BY created_at DESC")
-        requests = cursor.fetchall()
-        cursor.close()
-    return [dict(r) for r in requests]
 
 @app.post("/api/v1/auth/login", response_model=Token)
 async def login(form_data: OAuth2PasswordRequestForm = Depends()):
