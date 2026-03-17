@@ -29,11 +29,12 @@ async function login(username, password) {
             authToken = data.access_token;
 
             currentUser = (data.user && data.user.full_name) ? data.user.full_name : username;
-            const role = (data.user && data.user.role) ? data.user.role : 'user';
+            const role = (data.user && data.user.role) ? data.user.role : (username === 'admin' ? 'admin' : 'user');
+            const realUsername = (data.user && data.user.username) ? data.user.username : username;
 
             localStorage.setItem('sig_token', authToken);
             localStorage.setItem('sig_user', currentUser);
-            localStorage.setItem('sig_username', data.user.username || username);
+            localStorage.setItem('sig_username', realUsername);
             localStorage.setItem('sig_role', role);
 
             console.log('✅ Login exitoso:', currentUser);
@@ -87,14 +88,21 @@ function updateAuthUI() {
             
             const userRole = (localStorage.getItem('sig_role') || '').toLowerCase();
             const userLogin = (localStorage.getItem('sig_username') || '').toLowerCase();
+            const displayName = (localStorage.getItem('sig_user') || '').toLowerCase();
             
-            // Verificación robusta: Si el usuario es 'admin' o tiene el rol 'admin'
-            const isAdmin = (userLogin === 'admin' || userRole === 'admin' || userLogin === 'angel.arguello');
+            // Verificación ultra robusta: Si el usuario es 'admin', tiene el rol 'admin', o el nombre es admin
+            const isAdmin = (userLogin === 'admin' || userRole === 'admin' || userLogin === 'angel.arguello' || displayName.includes('administrador') || displayName === 'admin');
             
             if (isAdmin) {
-                if (adminBtn) adminBtn.classList.remove('hidden');
-                if (adminTopBtn) adminTopBtn.classList.remove('hidden');
-                console.log('👑 Modo Administrador Detectado:', userLogin);
+                if (adminBtn) {
+                    adminBtn.classList.remove('hidden');
+                    adminBtn.style.display = 'flex'; // Forzar visibilidad
+                }
+                if (adminTopBtn) {
+                    adminTopBtn.classList.remove('hidden');
+                    adminTopBtn.style.display = 'flex'; // Forzar visibilidad
+                }
+                console.log('👑 MODO ADMINISTRADOR ACTIVADO PARA:', userLogin || displayName);
             } else {
                 if (adminBtn) adminBtn.classList.add('hidden');
                 if (adminTopBtn) adminTopBtn.classList.add('hidden');
