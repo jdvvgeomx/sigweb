@@ -78,13 +78,22 @@ function changeBaseLayer(layerName) {
 
     if (currentScale === 'nacional' && map.hasLayer(layers.nacional)) {
         layers.nacional.clearLayers();
-        fetch('Nacional_opt.geojson').then(r => r.json()).then(data => {
+        const render = (data) => {
             const isDarkLayer = (layerName === 'Satélite Híbrido');
             const nationalStyle = isDarkLayer ?
                 { color: '#F6C453', weight: 2, fillOpacity: 0.25, fillColor: '#F6C453' } :
                 { color: '#000', weight: 2, fillOpacity: 0.35, fillColor: '#555' };
             L.geoJSON(data, { style: nationalStyle }).addTo(layers.nacional);
-        }).catch(e => console.warn("Error actualizando polígono nacional", e));
+        };
+
+        if (nacionalGeoJSON) {
+            render(nacionalGeoJSON);
+        } else {
+            fetch('Nacional_opt.geojson').then(r => r.json()).then(data => {
+                nacionalGeoJSON = data;
+                render(data);
+            }).catch(e => console.warn("Error actualizando polígono nacional", e));
+        }
     }
 }
 
@@ -222,7 +231,7 @@ function showNational() {
     clearAll();
     actualizarLeyenda('nacional');
 
-    fetch('Nacional_opt.geojson').then(r => r.json()).then(data => {
+    const renderNational = (data) => {
         const isDarkLayer = (currentBaseLayer === baseLayers['Satélite Híbrido']);
         const nationalStyle = isDarkLayer ?
             { color: '#F6C453', weight: 2, fillOpacity: 0.25, fillColor: '#F6C453' } :
@@ -230,7 +239,16 @@ function showNational() {
 
         const layer = L.geoJSON(data, { style: nationalStyle }).addTo(layers.nacional);
         try { map.fitBounds(layer.getBounds(), { padding: [30, 30] }); } catch (e) { }
-    }).catch(e => console.warn("Nacional_opt.geojson error", e));
+    };
+
+    if (nacionalGeoJSON) {
+        renderNational(nacionalGeoJSON);
+    } else {
+        fetch('Nacional_opt.geojson').then(r => r.json()).then(data => {
+            nacionalGeoJSON = data;
+            renderNational(data);
+        }).catch(e => console.warn("Nacional_opt.geojson error", e));
+    }
 
     layers.nacional.addTo(map);
 
@@ -293,10 +311,19 @@ function showState() {
     clearAll();
     actualizarLeyenda('estatal');
 
-    fetch('Veracruz.geojson').then(r => r.json()).then(data => {
+    const renderState = (data) => {
         const layer = L.geoJSON(data, { style: { color: '#006847', weight: 2, fillOpacity: 0.2 } }).addTo(layers.estatal);
         try { map.fitBounds(layer.getBounds(), { padding: [30, 30] }); } catch (e) { }
-    }).catch(e => console.warn("Veracruz.geojson error", e));
+    };
+
+    if (estatalGeoJSON) {
+        renderState(estatalGeoJSON);
+    } else {
+        fetch('Veracruz.geojson').then(r => r.json()).then(data => {
+            estatalGeoJSON = data;
+            renderState(data);
+        }).catch(e => console.warn("Veracruz.geojson error", e));
+    }
 
     layers.estatal.addTo(map);
 
@@ -374,7 +401,7 @@ function showMunicipalities() {
         return;
     }
 
-    fetch('Municipal_opt.geojson').then(r => r.json()).then(data => {
+    const render = (data) => {
         municipalGeoJSON = data;
         const layer = L.geoJSON(data, {
             style: (feature) => {
@@ -383,9 +410,6 @@ function showMunicipalities() {
             },
             onEachFeature: (f, l) => {
                 l.on('click', (e) => {
-                    // --- NUEVA LÓGICA DE PRIORIDAD DE ANÁLISIS ---
-
-                    // 1. Si estamos en modo "Conteo de Puntos" (PiP), ejecutamos análisis
                     if (window.pipMode) {
                         try {
                             const polygon = f.geometry;
@@ -404,22 +428,14 @@ function showMunicipalities() {
                             </div>`;
                             L.popup().setLatLng(e.latlng).setContent(msg).openOn(map);
                         } catch (err) { console.error('Error PiP:', err); }
-                        return; // Importante: Salir para no mostrar info demográfica
-                    }
-
-                    // 2. Si estamos en CUALQUIER OTRA herramienta de análisis (Medir, Buffer)
-                    // NO hacemos nada aquí para dejar que el clic llegue al MAPA
-                    if (window.analysisMode) {
                         return;
                     }
+                    if (window.analysisMode) return;
 
-                    // 3. Comportamiento normal: Mostrar información del municipio y abrir POPUP con gráfica
                     try { highlightLayer.clearLayers(); } catch (e) { }
                     if (highlightLabel) { try { map.removeLayer(highlightLabel); } catch (e) { }; highlightLabel = null; }
 
                     highlightLayer.addData(f);
-                    
-                    // Solo el municipio seleccionado tendrá la etiqueta flotante al pasar el mouse
                     highlightLayer.eachLayer(layer => {
                         layer.bindTooltip(f.properties.NOMGEO, {
                             permanent: false,
@@ -428,14 +444,10 @@ function showMunicipalities() {
                             sticky: true
                         });
                     });
-
                     applyGlowToLayer(highlightLayer);
 
-                    // Normalización robusta para búsqueda de población (igual que en ui.js)
                     const normalizeStr = str => str ? str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().trim() : "";
                     const searchName = normalizeStr(f.properties.NOMGEO);
-
-                    // Bug fix #2: guard — si los datos de población aún no cargaron, no crashear
                     if (!poblacion || !poblacion.municipios || poblacion.municipios.length === 0) {
                         l.bindPopup(`<div style="padding:12px; text-align:center">
                             <b style="color:#F6C453">${f.properties.NOMGEO}</b><br>
@@ -444,32 +456,27 @@ function showMunicipalities() {
                         return;
                     }
                     const pData = poblacion.municipios.find(x => normalizeStr(x.NOMGEO) === searchName);
-
-                    if (pData) {
-                        // Comentado para quitar la gráfica del mapa y dejar solo la lateral
-                        /*
-                        const popupContent = `...`;
-                        const popup = L.popup({ ... });
-                        popup.on('add', () => { ... });
-                        popup.openOn(map);
-                        */
-                    } else {
+                    if (!pData) {
                         l.bindPopup(`<div style="padding:10px"><b>${f.properties.NOMGEO}</b><br>Datos no disponibles.</div>`).openPopup();
                     }
-
                     if (window.ui && window.ui.mostrarInfoMunicipio) {
                         window.ui.mostrarInfoMunicipio(f.properties.CVEGEO, f.properties.NOMGEO);
-                    } else if (typeof mostrarInfoMunicipio === 'function') {
-                        mostrarInfoMunicipio(f.properties.CVEGEO, f.properties.NOMGEO);
                     }
                 });
-                // Quitamos el bindPopup estático para controlar la apertura manualmente arriba
-                // l.bindPopup(f.properties.NOMGEO); 
             }
         }).addTo(layers.municipios);
         layers.municipios.addTo(map);
         try { map.fitBounds(layer.getBounds(), { padding: [30, 30] }); } catch (e) { }
-    }).catch(e => console.warn("Municipal_opt.geojson error", e));
+    };
+
+    if (municipalGeoJSON) {
+        render(municipalGeoJSON);
+    } else {
+        fetch('Municipal_opt.geojson')
+            .then(r => r.json())
+            .then(data => render(data))
+            .catch(e => console.warn("Error cargando municipios", e));
+    }
 }
 
 function showUVRegions() {

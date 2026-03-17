@@ -12,6 +12,8 @@ let tempMarker = null;
 
 let municipiosIndex = [];
 let municipalGeoJSON = null;
+let estatalGeoJSON = null;
+let nacionalGeoJSON = null;
 let poblacion = {
     "nacional": {},
     "veracruz": {},

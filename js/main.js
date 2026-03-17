@@ -12,12 +12,25 @@ window.onload = function () {
     spawnParticles();
     setupSearchListeners();
 
-    // Precarga de GeoJSON (opcional, pero útil para búsqueda rápida)
+    // Precarga de GeoJSON para mejorar velocidad
+    fetch('Nacional_opt.geojson')
+        .then(r => r.json())
+        .then(data => {
+            nacionalGeoJSON = data;
+            const l = L.geoJSON(data);
+            map.fitBounds(l.getBounds(), { padding: [30, 30] });
+        })
+        .catch(e => console.warn("Error precarga nacional", e));
+
+    fetch('Veracruz.geojson')
+        .then(r => r.json())
+        .then(data => { estatalGeoJSON = data; })
+        .catch(e => console.warn("Error precarga estatal", e));
+
     fetch('Municipal_opt.geojson')
         .then(r => r.json())
         .then(data => {
             municipalGeoJSON = data;
-            // No creamos la capa aquí, solo el índice para búsqueda
             municipiosIndex = data.features.map(f => ({
                 cve: f.properties.CVEGEO,
                 nombre: f.properties.NOMGEO
@@ -42,11 +55,5 @@ window.onload = function () {
         }
         map.invalidateSize();
     }, 800);
-
-    // Ajuste inicial de límites
-    fetch('Nacional_opt.geojson').then(r => r.json()).then(data => {
-        const l = L.geoJSON(data);
-        map.fitBounds(l.getBounds(), { padding: [30, 30] });
-    }).catch(e => { });
 };
 

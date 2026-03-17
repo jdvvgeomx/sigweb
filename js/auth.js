@@ -83,21 +83,13 @@ function updateAuthUI() {
             }
 
             const adminBtn = document.getElementById('admin-panel-btn');
-            const recoveryBtn = document.getElementById('recovery-requests-btn');
             const userRole = localStorage.getItem('sig_role');
             const userLogin = localStorage.getItem('sig_username');
             
-            // Solo 'admin' (tú) verá las solicitudes de recuperación
-            if (userLogin === 'admin') {
+            if (userLogin === 'admin' || userRole === 'admin') {
                 if (adminBtn) adminBtn.classList.remove('hidden');
-                if (recoveryBtn) recoveryBtn.classList.remove('hidden');
-            } else if (userRole === 'admin') {
-                // Otros administradores (como el director) ven el panel normal pero no solicitudes
-                if (adminBtn) adminBtn.classList.remove('hidden');
-                if (recoveryBtn) recoveryBtn.classList.add('hidden');
             } else {
                 if (adminBtn) adminBtn.classList.add('hidden');
-                if (recoveryBtn) recoveryBtn.classList.add('hidden');
             }
         } else {
             if (loginBtn) loginBtn.classList.remove('hidden');
@@ -106,9 +98,7 @@ function updateAuthUI() {
                 loggedInView.style.display = 'none';
             }
             const adminBtn = document.getElementById('admin-panel-btn');
-            const recoveryBtn = document.getElementById('recovery-requests-btn');
             if (adminBtn) adminBtn.classList.add('hidden');
-            if (recoveryBtn) recoveryBtn.classList.add('hidden');
         }
     } catch (err) {
         console.error('❌ Error en updateAuthUI:', err);
