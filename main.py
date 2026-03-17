@@ -205,6 +205,18 @@ def init_db():
                     created_by TEXT
                 )
             ''')
+
+            # Tabla de Solicitudes de Recuperación (Respaldo si falla el correo)
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS recovery_requests (
+                    id SERIAL PRIMARY KEY,
+                    username TEXT NOT NULL,
+                    full_name TEXT,
+                    email TEXT,
+                    status TEXT DEFAULT 'pending',
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ''')
             
             # Creamos el admin inicial
             raw_admin_pass = os.environ.get("ADMIN_PASSWORD", "uv2026")
@@ -546,30 +558,49 @@ async def forgot_password(request: ForgotPassword):
         """
         msg.attach(MIMEText(body, 'plain'))
 
-        # Lógica de envío con reintento (Puerto 465 SSL vs 587 STARTTLS)
+        # 3. Guardar en Base de Datos (Respaldo garantizado)
         try:
-            print(f"DEBUG: Intentando enviar correo vía SSL (Puerto {SMTP_PORT})...")
-            if SMTP_PORT == 465:
-                server = smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT, timeout=10)
-            else:
-                server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT, timeout=10)
-                server.starttls()
-                
-            server.login(SMTP_USER, SMTP_PASS)
-            server.send_message(msg)
-            server.quit()
-        except Exception as e1:
-            print(f"DEBUG: Error en primer intento (465/SSL): {e1}. Intentando puerto 587/STARTTLS...")
-            server = smtplib.SMTP(SMTP_SERVER, 587, timeout=10)
+            with get_db_conn() as conn:
+                if conn:
+                    cursor = conn.cursor()
+                    cursor.execute("INSERT INTO recovery_requests (username, full_name, email) VALUES (%s, %s, %s)",
+                                 (user_data['username'], user_data['full_name'], user_data['email']))
+                    conn.commit()
+                    cursor.close()
+        except Exception as dbe:
+            print(f"Error guardando respaldo de recuperación: {dbe}")
+
+        # 4. Enviar Correo
+        try:
+            print(f"DEBUG: Intentando enviar correo (Usuario: {SMTP_USER})...")
+            # Forzamos puerto 587 que es el más estándar para TLS
+            server = smtplib.SMTP("smtp.gmail.com", 587, timeout=15)
+            server.set_debuglevel(1)
             server.starttls()
             server.login(SMTP_USER, SMTP_PASS)
             server.send_message(msg)
             server.quit()
-        
-        return {"status": "success", "message": "Solicitud enviada al administrador correctamente."}
+            return {"status": "success", "message": "Solicitud enviada al administrador correctamente por correo y base de datos."}
+        except Exception as e:
+            print(f"DEBUG: Error SMTP: {e}")
+            return {"status": "success", "message": "Tu solicitud ha sido registrada en el panel del administrador. Él revisará tu cuenta pronto."}
+            
     except Exception as e:
-        print(f"Error crítico enviando correo (Fallo en ambos puertos): {e}")
-        return {"status": "success", "message": "Tu solicitud ha sido guardada. El administrador revisará tu cuenta pronto (Nota: Hubo un problema técnico enviando el correo de aviso, pero tu petición ya está en el sistema)."}
+        print(f"Error crítico: {e}")
+        return {"status": "error", "message": "Ocurrió un error al procesar tu solicitud."}
+
+@app.get("/api/v1/auth/recovery-requests")
+async def get_recovery_requests(current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="No autorizado")
+    
+    with get_db_conn() as conn:
+        if not conn: return []
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM recovery_requests ORDER BY created_at DESC")
+        requests = cursor.fetchall()
+        cursor.close()
+    return [dict(r) for r in requests]
 
 @app.post("/api/v1/auth/login", response_model=Token)
 async def login(form_data: OAuth2PasswordRequestForm = Depends()):
