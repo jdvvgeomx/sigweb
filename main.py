@@ -11,6 +11,7 @@ import os
 import psycopg2
 from psycopg2 import extras
 import json
+import ssl
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 from fastapi.middleware.gzip import GZipMiddleware
@@ -570,20 +571,26 @@ async def forgot_password(request: ForgotPassword):
         except Exception as dbe:
             print(f"Error guardando respaldo de recuperación: {dbe}")
 
-        # 4. Enviar Correo
+        # 4. Enviar Correo con SMTP_SSL (Puerto 465 - Recomendado para Gmail)
         try:
-            print(f"DEBUG: Intentando enviar correo (Usuario: {SMTP_USER})...")
-            # Forzamos puerto 587 que es el más estándar para TLS
-            server = smtplib.SMTP("smtp.gmail.com", 587, timeout=15)
-            server.set_debuglevel(1)
-            server.starttls()
-            server.login(SMTP_USER, SMTP_PASS)
-            server.send_message(msg)
-            server.quit()
+            print(f"DEBUG: Intentando enviar correo vía SSL (Puerto 465)...")
+            context = ssl.create_default_context()
+            with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context, timeout=15) as server:
+                server.login(SMTP_USER, SMTP_PASS)
+                server.send_message(msg)
+            
             return {"status": "success", "message": "Solicitud enviada al administrador correctamente por correo y base de datos."}
         except Exception as e:
-            print(f"DEBUG: Error SMTP: {e}")
-            return {"status": "success", "message": "Tu solicitud ha sido registrada en el panel del administrador. Él revisará tu cuenta pronto."}
+            print(f"DEBUG: Fallo SSL (465): {e}. Intentando puerto 587 como último recurso...")
+            try:
+                with smtplib.SMTP("smtp.gmail.com", 587, timeout=15) as server:
+                    server.starttls()
+                    server.login(SMTP_USER, SMTP_PASS)
+                    server.send_message(msg)
+                return {"status": "success", "message": "Solicitud enviada (vía TLS)."}
+            except Exception as e2:
+                print(f"DEBUG: Todos los puertos fallaron: {e2}")
+                return {"status": "success", "message": "Tu solicitud ha sido registrada en el panel del administrador. Él revisará tu cuenta pronto."}
             
     except Exception as e:
         print(f"Error crítico: {e}")
