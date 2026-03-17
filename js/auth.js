@@ -81,10 +81,15 @@ function updateAuthUI() {
             }
 
             const adminBtn = document.getElementById('admin-panel-btn');
+            const recoveryBtn = document.getElementById('recovery-requests-btn');
             const userRole = localStorage.getItem('sig_role');
-            if (adminBtn) {
-                if (userRole === 'admin') adminBtn.classList.remove('hidden');
-                else adminBtn.classList.add('hidden');
+            
+            if (userRole === 'admin') {
+                if (adminBtn) adminBtn.classList.remove('hidden');
+                if (recoveryBtn) recoveryBtn.classList.remove('hidden');
+            } else {
+                if (adminBtn) adminBtn.classList.add('hidden');
+                if (recoveryBtn) recoveryBtn.classList.add('hidden');
             }
         } else {
             if (loginBtn) loginBtn.classList.remove('hidden');
@@ -93,7 +98,9 @@ function updateAuthUI() {
                 loggedInView.style.display = 'none';
             }
             const adminBtn = document.getElementById('admin-panel-btn');
+            const recoveryBtn = document.getElementById('recovery-requests-btn');
             if (adminBtn) adminBtn.classList.add('hidden');
+            if (recoveryBtn) recoveryBtn.classList.add('hidden');
         }
     } catch (err) {
         console.error('❌ Error en updateAuthUI:', err);
