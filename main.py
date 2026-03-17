@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Depends, status, File, UploadFile, Form
+from fastapi import FastAPI, HTTPException, Depends, status, File, UploadFile, Form, BackgroundTasks
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
@@ -518,9 +518,44 @@ async def register(user: UserCreate):
         finally:
             cursor.close() # Changed from `return user` to `cursor.close()` to maintain correctness
 
+def send_recovery_email(user_data: dict, msg_body: str):
+    """Función para enviar correo en segundo plano para no bloquear al usuario."""
+    if not SMTP_PASS:
+        print(f"DEBUG: Recuperación para {user_data['username']} guardada en DB (SMTP no configurado).")
+        return
+
+    try:
+        msg = MIMEMultipart()
+        msg['From'] = SMTP_USER
+        msg['To'] = ADMIN_NOTIFY_EMAIL
+        msg['Subject'] = f"🚀 SOLICITUD DE RECUPERACIÓN: {user_data['username']}"
+        msg.attach(MIMEText(msg_body, 'plain'))
+
+        print(f"DEBUG: Intentando envío en segundo plano para {user_data['username']}...")
+        context = ssl.create_default_context()
+        # Intentamos SSL (465) primero
+        try:
+            with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context, timeout=10) as server:
+                server.login(SMTP_USER, SMTP_PASS)
+                server.send_message(msg)
+            print(f"DEBUG: Correo enviado con éxito (SSL).")
+        except Exception as e:
+            print(f"DEBUG: Fallo SSL, intentando TLS (587)... Error: {e}")
+            try:
+                with smtplib.SMTP("smtp.gmail.com", 587, timeout=10) as server:
+                    server.starttls()
+                    server.login(SMTP_USER, SMTP_PASS)
+                    server.send_message(msg)
+                print(f"DEBUG: Correo enviado con éxito (TLS).")
+            except Exception as e2:
+                print(f"DEBUG: El envío de correo falló definitivamente: {e2}")
+            
+    except Exception as e:
+        print(f"DEBUG: Error preparando mensaje: {e}")
+
 @app.post("/api/v1/auth/forgot-password")
-async def forgot_password(request: ForgotPassword):
-    # 1. Buscar si el usuario existe (opcional, por seguridad podrías no validarlo)
+async def forgot_password(request: ForgotPassword, background_tasks: BackgroundTasks):
+    # 1. Buscar si el usuario existe
     user_data = None
     with get_db_conn() as conn:
         if conn:
@@ -531,70 +566,41 @@ async def forgot_password(request: ForgotPassword):
             cursor.close()
 
     if not user_data:
-        # Por seguridad no decimos si existe o no, pero mandamos éxito falso
-        return {"status": "success", "message": "Si el usuario existe, se ha enviado la notificación al administrador."}
+        # Por seguridad no decimos si existe o no
+        return {"status": "success", "message": "Si el usuario existe, el administrador será notificado."}
 
-    # 2. Intentar enviar correo al Admin
-    if not SMTP_PASS:
-        print(f"AVISO: Petición de recuperación para {user_data['username']}, pero SMTP no está configurado.")
-        return {"status": "success", "message": "Solicitud registrada. El administrador revisará tu caso."}
-
+    # 2. Guardar en Base de Datos (Inmediato)
     try:
-        msg = MIMEMultipart()
-        msg['From'] = SMTP_USER
-        msg['To'] = ADMIN_NOTIFY_EMAIL
-        msg['Subject'] = f"🚀 SOLICITUD DE RECUPERACIÓN: {user_data['username']}"
+        with get_db_conn() as conn:
+            if conn:
+                cursor = conn.cursor()
+                cursor.execute("INSERT INTO recovery_requests (username, full_name, email) VALUES (%s, %s, %s)",
+                             (user_data['username'], user_data['full_name'], user_data['email']))
+                conn.commit()
+                cursor.close()
+    except Exception as dbe:
+        print(f"Error guardando en BD: {dbe}")
 
-        body = f"""
-        Hola Administrador,
-        
-        El usuario {user_data['full_name']} ({user_data['username']}) ha solicitado recuperar su contraseña en el Geoportal Interactivo.
-        
-        Detalles:
-        - Usuario: {user_data['username']}
-        - Correo registrado del usuario: {user_data['email']}
-        - Fecha: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-        
-        Por favor, contacta con el usuario para realizar el cambio manual o verifica su identidad.
-        """
-        msg.attach(MIMEText(body, 'plain'))
+    # 3. Preparar mensaje y lanzar envío en segundo plano
+    msg_body = f"""
+    Hola Administrador,
+    
+    El usuario {user_data['full_name']} ({user_data['username']}) ha solicitado recuperar su contraseña en el Geoportal Interactivo.
+    
+    Detalles:
+    - Usuario: {user_data['username']}
+    - Correo registrado del usuario: {user_data['email']}
+    - Fecha: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+    
+    Por favor, contacta con el usuario para realizar el cambio manual.
+    """
+    
+    background_tasks.add_task(send_recovery_email, user_data, msg_body)
 
-        # 3. Guardar en Base de Datos (Respaldo garantizado)
-        try:
-            with get_db_conn() as conn:
-                if conn:
-                    cursor = conn.cursor()
-                    cursor.execute("INSERT INTO recovery_requests (username, full_name, email) VALUES (%s, %s, %s)",
-                                 (user_data['username'], user_data['full_name'], user_data['email']))
-                    conn.commit()
-                    cursor.close()
-        except Exception as dbe:
-            print(f"Error guardando respaldo de recuperación: {dbe}")
-
-        # 4. Enviar Correo con SMTP_SSL (Puerto 465 - Recomendado para Gmail)
-        try:
-            print(f"DEBUG: Intentando enviar correo vía SSL (Puerto 465)...")
-            context = ssl.create_default_context()
-            with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context, timeout=15) as server:
-                server.login(SMTP_USER, SMTP_PASS)
-                server.send_message(msg)
-            
-            return {"status": "success", "message": "Solicitud enviada al administrador correctamente por correo y base de datos."}
-        except Exception as e:
-            print(f"DEBUG: Fallo SSL (465): {e}. Intentando puerto 587 como último recurso...")
-            try:
-                with smtplib.SMTP("smtp.gmail.com", 587, timeout=15) as server:
-                    server.starttls()
-                    server.login(SMTP_USER, SMTP_PASS)
-                    server.send_message(msg)
-                return {"status": "success", "message": "Solicitud enviada (vía TLS)."}
-            except Exception as e2:
-                print(f"DEBUG: Todos los puertos fallaron: {e2}")
-                return {"status": "success", "message": "Tu solicitud ha sido registrada en el panel del administrador. Él revisará tu cuenta pronto."}
-            
-    except Exception as e:
-        print(f"Error crítico: {e}")
-        return {"status": "error", "message": "Ocurrió un error al procesar tu solicitud."}
+    return {
+        "status": "success", 
+        "message": "Tu solicitud ha sido registrada. El administrador revisará tu cuenta pronto."
+    }
 
 @app.get("/api/v1/auth/recovery-requests")
 async def get_recovery_requests(current_user: dict = Depends(get_current_user)):
