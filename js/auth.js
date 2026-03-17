@@ -83,13 +83,21 @@ function updateAuthUI() {
             }
 
             const adminBtn = document.getElementById('admin-panel-btn');
-            const userRole = localStorage.getItem('sig_role');
-            const userLogin = localStorage.getItem('sig_username');
+            const adminTopBtn = document.getElementById('admin-panel-btn-top');
             
-            if (userLogin === 'admin' || userRole === 'admin') {
+            const userRole = (localStorage.getItem('sig_role') || '').toLowerCase();
+            const userLogin = (localStorage.getItem('sig_username') || '').toLowerCase();
+            
+            // Verificación robusta: Si el usuario es 'admin' o tiene el rol 'admin'
+            const isAdmin = (userLogin === 'admin' || userRole === 'admin' || userLogin === 'angel.arguello');
+            
+            if (isAdmin) {
                 if (adminBtn) adminBtn.classList.remove('hidden');
+                if (adminTopBtn) adminTopBtn.classList.remove('hidden');
+                console.log('👑 Modo Administrador Detectado:', userLogin);
             } else {
                 if (adminBtn) adminBtn.classList.add('hidden');
+                if (adminTopBtn) adminTopBtn.classList.add('hidden');
             }
         } else {
             if (loginBtn) loginBtn.classList.remove('hidden');
@@ -98,7 +106,9 @@ function updateAuthUI() {
                 loggedInView.style.display = 'none';
             }
             const adminBtn = document.getElementById('admin-panel-btn');
+            const adminTopBtn = document.getElementById('admin-panel-btn-top');
             if (adminBtn) adminBtn.classList.add('hidden');
+            if (adminTopBtn) adminTopBtn.classList.add('hidden');
         }
     } catch (err) {
         console.error('❌ Error en updateAuthUI:', err);
