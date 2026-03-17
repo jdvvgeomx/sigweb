@@ -33,6 +33,7 @@ async function login(username, password) {
 
             localStorage.setItem('sig_token', authToken);
             localStorage.setItem('sig_user', currentUser);
+            localStorage.setItem('sig_username', data.user.username || username);
             localStorage.setItem('sig_role', role);
 
             console.log('✅ Login exitoso:', currentUser);
@@ -58,6 +59,7 @@ function logout() {
     currentUser = null;
     localStorage.removeItem('sig_token');
     localStorage.removeItem('sig_user');
+    localStorage.removeItem('sig_username');
     localStorage.removeItem('sig_role');
     localStorage.removeItem('sig_picture');
     updateAuthUI();
@@ -83,10 +85,16 @@ function updateAuthUI() {
             const adminBtn = document.getElementById('admin-panel-btn');
             const recoveryBtn = document.getElementById('recovery-requests-btn');
             const userRole = localStorage.getItem('sig_role');
+            const userLogin = localStorage.getItem('sig_username');
             
-            if (userRole === 'admin') {
+            // Solo 'admin' (tú) verá las solicitudes de recuperación
+            if (userLogin === 'admin') {
                 if (adminBtn) adminBtn.classList.remove('hidden');
                 if (recoveryBtn) recoveryBtn.classList.remove('hidden');
+            } else if (userRole === 'admin') {
+                // Otros administradores (como el director) ven el panel normal pero no solicitudes
+                if (adminBtn) adminBtn.classList.remove('hidden');
+                if (recoveryBtn) recoveryBtn.classList.add('hidden');
             } else {
                 if (adminBtn) adminBtn.classList.add('hidden');
                 if (recoveryBtn) recoveryBtn.classList.add('hidden');
