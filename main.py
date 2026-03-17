@@ -69,9 +69,9 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
 SMTP_SERVER = os.environ.get("SMTP_SERVER", "smtp.gmail.com").strip()
-SMTP_PORT = int(os.environ.get("SMTP_PORT", 587))
+SMTP_PORT = int(os.environ.get("SMTP_PORT", 465)) # Cambiado a 465 por defecto para SSL
 SMTP_USER = os.environ.get("SMTP_USER", "adminofizeus@gmail.com").strip()
-SMTP_PASS = os.environ.get("SMTP_PASSWORD", "").strip() # Se requiere App Password de Google
+SMTP_PASS = os.environ.get("SMTP_PASSWORD", "").strip() 
 ADMIN_NOTIFY_EMAIL = os.environ.get("ADMIN_NOTIFY_EMAIL", "adminofizeus@gmail.com").strip()
 
 pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
@@ -546,18 +546,30 @@ async def forgot_password(request: ForgotPassword):
         """
         msg.attach(MIMEText(body, 'plain'))
 
-        server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT, timeout=10)
-        server.set_debuglevel(1)
-        server.starttls()
-        server.login(SMTP_USER, SMTP_PASS)
-        server.send_message(msg)
-        server.quit()
+        # Lógica de envío con reintento (Puerto 465 SSL vs 587 STARTTLS)
+        try:
+            print(f"DEBUG: Intentando enviar correo vía SSL (Puerto {SMTP_PORT})...")
+            if SMTP_PORT == 465:
+                server = smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT, timeout=10)
+            else:
+                server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT, timeout=10)
+                server.starttls()
+                
+            server.login(SMTP_USER, SMTP_PASS)
+            server.send_message(msg)
+            server.quit()
+        except Exception as e1:
+            print(f"DEBUG: Error en primer intento (465/SSL): {e1}. Intentando puerto 587/STARTTLS...")
+            server = smtplib.SMTP(SMTP_SERVER, 587, timeout=10)
+            server.starttls()
+            server.login(SMTP_USER, SMTP_PASS)
+            server.send_message(msg)
+            server.quit()
         
         return {"status": "success", "message": "Solicitud enviada al administrador correctamente."}
     except Exception as e:
-        print(f"Error crítico enviando correo: {e}")
-        # Si falla el correo, avisamos al usuario pero le decimos que el admin lo verá en los logs
-        return {"status": "success", "message": "Tu solicitud ha sido guardada. El administrador revisará tu cuenta pronto (No se pudo enviar el correo de aviso)."}
+        print(f"Error crítico enviando correo (Fallo en ambos puertos): {e}")
+        return {"status": "success", "message": "Tu solicitud ha sido guardada. El administrador revisará tu cuenta pronto (Nota: Hubo un problema técnico enviando el correo de aviso, pero tu petición ya está en el sistema)."}
 
 @app.post("/api/v1/auth/login", response_model=Token)
 async def login(form_data: OAuth2PasswordRequestForm = Depends()):
@@ -747,6 +759,7 @@ async def list_layers():
 async def delete_layer(layer_id: int, current_user: dict = Depends(get_current_user)):
     try:
         with get_db_conn() as conn:
+            if not conn: raise HTTPException(status_code=503, detail="Base de datos no disponible")
             cursor = conn.cursor()
             # 1. Obtener datos de la capa antes de borrar
             cursor.execute("SELECT url, created_by FROM layers WHERE id = %s", (layer_id,))
