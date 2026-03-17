@@ -772,7 +772,7 @@ Object.assign(ui, {
 
         try {
             const token = localStorage.getItem('token');
-            const res = await fetch(`${API_BASE_URL}/layers/${id}`, {
+            const res = await fetch(`${API_BASE_URL}/api/v1/layers/${id}`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -815,7 +815,7 @@ Object.assign(ui, {
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ENVIANDO...';
 
         try {
-            const res = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
+            const res = await fetch(`${API_BASE_URL}/api/v1/auth/forgot-password`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ user_identifier: userIdentifier })
