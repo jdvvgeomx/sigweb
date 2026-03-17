@@ -795,6 +795,47 @@ Object.assign(ui, {
             console.error('Error deleting layer:', error);
             showNotification('Error de conexión al eliminar la capa', 'error');
         }
+    },
+
+    openForgotPassword: function() {
+        document.getElementById('modal-forgot-password').classList.remove('hidden');
+    },
+
+    closeForgotPassword: function() {
+        document.getElementById('modal-forgot-password').classList.add('hidden');
+    },
+
+    handleForgotPassword: async function(e) {
+        e.preventDefault();
+        const userIdentifier = document.getElementById('forgot-user').value;
+        const btn = e.target.querySelector('button[type="submit"]');
+        const oldText = btn.innerHTML;
+        
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ENVIANDO...';
+
+        try {
+            const res = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_identifier: userIdentifier })
+            });
+            const data = await res.json();
+
+            if (res.ok) {
+                showNotification(data.message, 'success');
+                this.closeForgotPassword();
+                closeLoginModal();
+            } else {
+                showNotification(data.detail || 'Error al enviar la solicitud', 'error');
+            }
+        } catch (error) {
+            console.error('Error in forgot password:', error);
+            showNotification('Error de conexión', 'error');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = oldText;
+        }
     }
 });
 

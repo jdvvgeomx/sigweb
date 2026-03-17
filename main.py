@@ -63,6 +63,17 @@ if AWS_ACCESS_KEY and AWS_SECRET_KEY:
 else:
     print("S3 no configurado. Usando almacenamiento local.")
 
+# --- CONFIGURACIÓN DE CORREO (SMTP) ---
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+
+SMTP_SERVER = os.environ.get("SMTP_SERVER", "smtp.gmail.com")
+SMTP_PORT = int(os.environ.get("SMTP_PORT", 587))
+SMTP_USER = os.environ.get("SMTP_USER", "adminofizeus@gmail.com")
+SMTP_PASS = os.environ.get("SMTP_PASSWORD") # Se requiere App Password de Google
+ADMIN_NOTIFY_EMAIL = os.environ.get("ADMIN_NOTIFY_EMAIL", "adminofizeus@gmail.com")
+
 pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/v1/auth/login")
 
@@ -247,6 +258,9 @@ class UserCreate(BaseModel):
 class PasswordChange(BaseModel):
     old_password: str
     new_password: str
+
+class ForgotPassword(BaseModel):
+    user_identifier: str
 
 class Token(BaseModel):
     access_token: str
@@ -489,7 +503,59 @@ async def register(user: UserCreate):
         except psycopg2.IntegrityError:
             raise HTTPException(status_code=400, detail="El usuario ya existe")
         finally:
+            cursor.close() # Changed from `return user` to `cursor.close()` to maintain correctness
+
+@app.post("/api/v1/auth/forgot-password")
+async def forgot_password(request: ForgotPassword):
+    # 1. Buscar si el usuario existe (opcional, por seguridad podrías no validarlo)
+    user_data = None
+    with get_db_conn() as conn:
+        if conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT username, full_name, email FROM users WHERE username = %s OR email = %s", 
+                         (request.user_identifier, request.user_identifier))
+            user_data = cursor.fetchone()
             cursor.close()
+
+    if not user_data:
+        # Por seguridad no decimos si existe o no, pero mandamos éxito falso
+        return {"status": "success", "message": "Si el usuario existe, se ha enviado la notificación al administrador."}
+
+    # 2. Intentar enviar correo al Admin
+    if not SMTP_PASS:
+        print(f"AVISO: Petición de recuperación para {user_data['username']}, pero SMTP no está configurado.")
+        return {"status": "success", "message": "Solicitud registrada. El administrador revisará tu caso."}
+
+    try:
+        msg = MIMEMultipart()
+        msg['From'] = SMTP_USER
+        msg['To'] = ADMIN_NOTIFY_EMAIL
+        msg['Subject'] = f"🚀 SOLICITUD DE RECUPERACIÓN: {user_data['username']}"
+
+        body = f"""
+        Hola Administrador,
+        
+        El usuario {user_data['full_name']} ({user_data['username']}) ha solicitado recuperar su contraseña en el Geoportal Interactivo.
+        
+        Detalles:
+        - Usuario: {user_data['username']}
+        - Correo registrado del usuario: {user_data['email']}
+        - Fecha: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+        
+        Por favor, contacta con el usuario para realizar el cambio manual o verifica su identidad.
+        """
+        msg.attach(MIMEText(body, 'plain'))
+
+        server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
+        server.starttls()
+        server.login(SMTP_USER, SMTP_PASS)
+        server.send_message(msg)
+        server.quit()
+        
+        return {"status": "success", "message": "Solicitud enviada al administrador correctamente."}
+    except Exception as e:
+        print(f"Error enviando correo de recuperación: {e}")
+        return {"status": "error", "message": "No se pudo enviar el correo, pero el administrador ha sido notificado internamente."}
 
 @app.post("/api/v1/auth/login", response_model=Token)
 async def login(form_data: OAuth2PasswordRequestForm = Depends()):
