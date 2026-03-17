@@ -206,7 +206,8 @@ def init_db():
             cursor.execute('''
                 INSERT INTO users (username, password, full_name, email, university, role) 
                 VALUES (%s, %s, %s, %s, %s, %s)
-                ON CONFLICT (username) DO NOTHING
+                ON CONFLICT (username) 
+                DO UPDATE SET password = EXCLUDED.password, role = 'admin'
             ''', ('admin', admin_pass, 'Administrador SIG', 'admin@uv.mx', 'Universidad Veracruzana', 'admin'))
 
             # 2. Director: Angel Fernando Arguello
@@ -214,7 +215,8 @@ def init_db():
             cursor.execute('''
                 INSERT INTO users (username, password, full_name, email, university, role) 
                 VALUES (%s, %s, %s, %s, %s, %s)
-                ON CONFLICT (username) DO NOTHING
+                ON CONFLICT (username) 
+                DO UPDATE SET password = EXCLUDED.password, role = 'admin'
             ''', ('angel.arguello', director_pass, 'Angel Fernando Arguello', 'a_arguello@uv.mx', 'Universidad Veracruzana', 'admin'))
             
             conn.commit()
