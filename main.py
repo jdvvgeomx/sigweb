@@ -68,11 +68,11 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
-SMTP_SERVER = os.environ.get("SMTP_SERVER", "smtp.gmail.com")
+SMTP_SERVER = os.environ.get("SMTP_SERVER", "smtp.gmail.com").strip()
 SMTP_PORT = int(os.environ.get("SMTP_PORT", 587))
-SMTP_USER = os.environ.get("SMTP_USER", "adminofizeus@gmail.com")
-SMTP_PASS = os.environ.get("SMTP_PASSWORD") # Se requiere App Password de Google
-ADMIN_NOTIFY_EMAIL = os.environ.get("ADMIN_NOTIFY_EMAIL", "adminofizeus@gmail.com")
+SMTP_USER = os.environ.get("SMTP_USER", "adminofizeus@gmail.com").strip()
+SMTP_PASS = os.environ.get("SMTP_PASSWORD", "").strip() # Se requiere App Password de Google
+ADMIN_NOTIFY_EMAIL = os.environ.get("ADMIN_NOTIFY_EMAIL", "adminofizeus@gmail.com").strip()
 
 pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/v1/auth/login")
@@ -546,7 +546,8 @@ async def forgot_password(request: ForgotPassword):
         """
         msg.attach(MIMEText(body, 'plain'))
 
-        server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
+        server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT, timeout=10)
+        server.set_debuglevel(1)
         server.starttls()
         server.login(SMTP_USER, SMTP_PASS)
         server.send_message(msg)
@@ -554,8 +555,9 @@ async def forgot_password(request: ForgotPassword):
         
         return {"status": "success", "message": "Solicitud enviada al administrador correctamente."}
     except Exception as e:
-        print(f"Error enviando correo de recuperación: {e}")
-        return {"status": "error", "message": "No se pudo enviar el correo, pero el administrador ha sido notificado internamente."}
+        print(f"Error crítico enviando correo: {e}")
+        # Si falla el correo, avisamos al usuario pero le decimos que el admin lo verá en los logs
+        return {"status": "success", "message": "Tu solicitud ha sido guardada. El administrador revisará tu cuenta pronto (No se pudo enviar el correo de aviso)."}
 
 @app.post("/api/v1/auth/login", response_model=Token)
 async def login(form_data: OAuth2PasswordRequestForm = Depends()):
