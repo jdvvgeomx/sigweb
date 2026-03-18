@@ -682,9 +682,9 @@ Object.assign(ui, {
         list.innerHTML = data.layers.map(layer => {
             const icon = layer.file_type === 'shp' ? 'fa-file-zipper' : (layer.file_type === 'csv' ? 'fa-file-csv' : 'fa-file-code');
             const isActive = window.mapLayers && window.mapLayers[layer.id] ? 'bg-[#F6C453] text-[#1a2a6c]' : 'bg-white/10 text-white';
-            const currentUser = localStorage.getItem('username');
-            const isAdmin = localStorage.getItem('user_role') === 'admin';
-            const canDelete = (currentUser === layer.created_by || isAdmin);
+            const currentUsername = (localStorage.getItem('sig_username') || '').toLowerCase();
+            const isAdmin = (localStorage.getItem('sig_role') || '').toLowerCase() === 'admin' || currentUsername === 'admin' || currentUsername === 'angel.arguello';
+            const canDelete = (currentUsername === (layer.created_by || '').toLowerCase() || isAdmin);
 
             return `
                 <div class="flex flex-col gap-2 p-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all relative group">
@@ -771,12 +771,8 @@ Object.assign(ui, {
         }
 
         try {
-            const token = localStorage.getItem('token');
-            const res = await fetch(`${API_BASE_URL}/api/v1/layers/${id}`, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
+            const res = await fetchWithAuth(`/api/v1/layers/${id}`, {
+                method: 'DELETE'
             });
 
             if (res.ok) {

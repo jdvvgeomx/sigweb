@@ -682,50 +682,43 @@ async def list_layers():
 
 @app.delete("/api/v1/layers/{layer_id}")
 async def delete_layer(layer_id: int, current_user: dict = Depends(get_current_user)):
-    try:
-        with get_db_conn() as conn:
-            if not conn: raise HTTPException(status_code=503, detail="Base de datos no disponible")
-            cursor = conn.cursor()
-            # 1. Obtener datos de la capa antes de borrar
-            cursor.execute("SELECT url, created_by FROM layers WHERE id = %s", (layer_id,))
-            layer = cursor.fetchone()
+    with get_db_conn() as conn:
+        if not conn: raise HTTPException(status_code=503, detail="BD no disponible")
+        cursor = conn.cursor()
+        
+        # 1. Obtener datos de la capa
+        cursor.execute("SELECT created_by, url FROM layers WHERE id = %s", (layer_id,))
+        layer = cursor.fetchone()
+        
+        if not layer:
+            cursor.close()
+            raise HTTPException(status_code=404, detail="Capa no encontrada")
             
-            if not layer:
-                raise HTTPException(status_code=404, detail="Capa no encontrada")
+        # 2. Permisos
+        if current_user['role'] != 'admin' and current_user['username'] != layer['created_by']:
+            cursor.close()
+            raise HTTPException(status_code=403, detail="No tienes permiso para eliminar esta capa")
             
-            # 2. Verificar permisos (solo dueño o admin)
-            if layer['created_by'] != current_user['username'] and current_user['role'] != 'admin':
-                raise HTTPException(status_code=403, detail="No tienes permiso para borrar esta capa")
-            
-            # 3. Borrar de S3 si aplica
-            file_url = layer['url']
+        # 3. Borrado físico opcional (S3 o Local)
+        file_url = layer['url']
+        try:
             if s3_client and "amazonaws.com" in file_url:
-                try:
-                    # Extraer el key del URL
-                    # Ej: https://bucket.s3.region.amazonaws.com/layers/archivo.zip
-                    s3_key = file_url.split(".com/")[-1]
-                    s3_client.delete_object(Bucket=AWS_BUCKET_NAME, Key=s3_key)
-                    print(f"DEBUG: Archivo borrado de S3: {s3_key}")
-                except Exception as s3e:
-                    print(f"DEBUG: Error borrando de S3 (posiblemente ya no existe): {s3e}")
+                s3_key = file_url.split(".com/")[-1]
+                s3_client.delete_object(Bucket=AWS_BUCKET_NAME, Key=s3_key)
             elif file_url.startswith("/uploads/"):
-                # Borrado local
                 local_path = os.path.join(UPLOAD_DIR, file_url.replace("/uploads/", ""))
                 if os.path.exists(local_path):
                     os.remove(local_path)
-                    print(f"DEBUG: Archivo local borrado: {local_path}")
+        except Exception as fe:
+            print(f"DEBUG: Error borrando archivo físico: {fe}")
 
-            # 4. Borrar de la base de datos
-            cursor.execute("DELETE FROM layers WHERE id = %s", (layer_id,))
-            conn.commit()
-            cursor.close()
-
-        return {"status": "success", "message": "Capa eliminada correctamente"}
-    except HTTPException:
-        raise
-    except Exception as e:
-        print(f"Error borrando capa: {e}")
-        raise HTTPException(status_code=500, detail="Error interno al eliminar la capa")
+        # 4. Eliminación de la base de datos (o marcado)
+        # Vamos a hacer un borrado real para evitar acumular capas basura
+        cursor.execute("DELETE FROM layers WHERE id = %s", (layer_id,))
+        conn.commit()
+        cursor.close()
+        
+    return {"status": "success", "message": "Capa eliminada permanentemente"}
 
 # Montamos carpetas de recursos
 app.mount("/js", StaticFiles(directory="js"), name="js")
