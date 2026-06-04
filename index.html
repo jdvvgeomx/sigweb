@@ -151,15 +151,79 @@
                     </p>
 
                     <h2 class="font-semibold mb-2 text-sm">Escalas</h2>
-                    <div id="map-controls">
-                        <button id="btn-nacional" onclick="showNational()" class="map-control-btn">Nacional</button>
-                        <button id="btn-estatal" onclick="showState()" class="map-control-btn">Estatal</button>
-                        <button id="btn-municipios" onclick="showMunicipalities()"
-                            class="map-control-btn">Municipios</button>
-                        <button id="btn-regiones-uv" onclick="showUVRegions()" class="map-control-btn"
-                            style="border-left: 3px solid #F6C453;">Regiones UV</button>
+                    
+                    <!-- NACIONAL -->
+                    <details class="mb-2 group">
+                        <summary class="cursor-pointer flex justify-between items-center bg-white/5 border border-white/10 rounded-lg p-2 text-xs font-bold hover:bg-white/10 transition-all list-none">
+                            <span><i class="fas fa-globe-americas mr-2 text-blue-400"></i> Nacional</span>
+                            <i class="fas fa-chevron-down text-white/50 group-open:rotate-180 transition-transform"></i>
+                        </summary>
+                        <div class="p-2 space-y-1 mt-1 bg-black/20 rounded-lg border border-white/5">
+                            <button id="btn-nacional" onclick="showNational()" class="w-full text-left px-3 py-1.5 text-[10px] hover:bg-white/10 rounded-md transition-all"><i class="fas fa-map mr-1 text-white/50"></i> Ver México (Estados)</button>
+                            <!-- Futuro botón para regiones nacionales -->
+                            <button id="btn-nacional-regiones" class="w-full text-left px-3 py-1.5 text-[10px] hover:bg-white/10 rounded-md transition-all opacity-50 cursor-not-allowed" title="Próximamente"><i class="fas fa-layer-group mr-1 text-white/50"></i> Regiones Nacionales</button>
+                        </div>
+                    </details>
+
+                    <!-- VERACRUZ -->
+                    <details class="mb-2 group" open>
+                        <summary class="cursor-pointer flex justify-between items-center bg-white/5 border border-white/10 rounded-lg p-2 text-xs font-bold hover:bg-white/10 transition-all list-none">
+                            <span><i class="fas fa-umbrella-beach mr-2 text-green-400"></i> Veracruz</span>
+                            <i class="fas fa-chevron-down text-white/50 group-open:rotate-180 transition-transform"></i>
+                        </summary>
+                        <div class="p-2 space-y-1 mt-1 bg-black/20 rounded-lg border border-white/5">
+                            <button id="btn-estatal" onclick="showState()" class="w-full text-left px-3 py-1.5 text-[10px] hover:bg-white/10 rounded-md transition-all"><i class="fas fa-map mr-1 text-white/50"></i> Vista Estatal</button>
+                            <button id="btn-municipios" onclick="showMunicipalities()" class="w-full text-left px-3 py-1.5 text-[10px] hover:bg-white/10 rounded-md transition-all"><i class="fas fa-map-marked-alt mr-1 text-white/50"></i> Municipios</button>
+                            <!-- Futuro botón para las 10 regiones de Veracruz -->
+                            <button id="btn-regiones-ver" class="w-full text-left px-3 py-1.5 text-[10px] hover:bg-white/10 rounded-md transition-all opacity-50 cursor-not-allowed" title="Próximamente"><i class="fas fa-draw-polygon mr-1 text-white/50"></i> 10 Regiones de Veracruz</button>
+                            
+                            <div class="border-t border-white/10 my-1"></div>
+                            <button id="btn-regiones-uv" onclick="showUVRegions()" class="w-full text-left px-3 py-1.5 text-[10px] hover:bg-white/10 rounded-md transition-all" style="border-left: 2px solid #F6C453;"><i class="fas fa-university mr-1 text-[#F6C453]"></i> Regiones UV</button>
+                            <div id="uv-menu-container" class="mt-1 pl-2"></div>
+                        </div>
+                    </details>
+
+                    <!-- CHIAPAS -->
+                    <details class="mb-2 group">
+                        <summary class="cursor-pointer flex justify-between items-center bg-white/5 border border-white/10 rounded-lg p-2 text-xs font-bold hover:bg-white/10 transition-all list-none">
+                            <span><i class="fas fa-mountain mr-2 text-orange-400"></i> Chiapas</span>
+                            <i class="fas fa-chevron-down text-white/50 group-open:rotate-180 transition-transform"></i>
+                        </summary>
+                        <div class="p-2 space-y-1 mt-1 bg-black/20 rounded-lg border border-white/5">
+                            <button id="btn-chiapas-estatal" class="w-full text-left px-3 py-1.5 text-[10px] hover:bg-white/10 rounded-md transition-all opacity-50 cursor-not-allowed" title="Próximamente"><i class="fas fa-map mr-1 text-white/50"></i> Vista Estatal</button>
+                            <!-- Futuro botón para las 16 regiones de Chiapas -->
+                            <button id="btn-regiones-chiapas" class="w-full text-left px-3 py-1.5 text-[10px] hover:bg-white/10 rounded-md transition-all opacity-50 cursor-not-allowed" title="Próximamente"><i class="fas fa-draw-polygon mr-1 text-white/50"></i> 16 Regiones de Chiapas</button>
+                            
+                            <div class="border-t border-white/10 my-1"></div>
+                            <button id="btn-olvidados-chiapas" class="w-full text-left px-3 py-1.5 text-[10px] hover:bg-red-500/20 rounded-md transition-all border border-red-500/30 opacity-50 cursor-not-allowed" title="Próximamente"><i class="fas fa-exclamation-triangle mr-1 text-red-400"></i> Municipios Olvidados</button>
+                        </div>
+                    </details>
+
+                    <div class="border-t border-white/10 my-4"></div>
+
+                    <h2 class="font-semibold mb-2 text-sm">Análisis Temático</h2>
+                    <div class="bg-black/20 rounded-lg p-2 border border-white/5 space-y-3">
+                        <label class="flex items-center justify-between text-[11px] cursor-not-allowed">
+                            <div class="flex items-center gap-2 opacity-50" title="Próximamente">
+                                <i class="fas fa-chart-line text-blue-300"></i>
+                                <span>Crecimiento (2010-2020)</span>
+                            </div>
+                            <div class="relative opacity-50">
+                                <input type="checkbox" class="sr-only peer" disabled>
+                                <div class="w-7 h-4 bg-white/20 peer-focus:outline-none rounded-full peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-[#F6C453]"></div>
+                            </div>
+                        </label>
+                        <label class="flex items-center justify-between text-[11px] cursor-not-allowed">
+                            <div class="flex items-center gap-2 opacity-50" title="Próximamente">
+                                <i class="fas fa-exclamation-circle text-orange-400"></i>
+                                <span>Índice de Marginación</span>
+                            </div>
+                            <div class="relative opacity-50">
+                                <input type="checkbox" class="sr-only peer" disabled>
+                                <div class="w-7 h-4 bg-white/20 peer-focus:outline-none rounded-full peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-orange-500"></div>
+                            </div>
+                        </label>
                     </div>
-                    <div id="uv-menu-container" class="mt-2"></div>
 
                     <div class="border-t border-white/10 my-4"></div>
 
@@ -659,8 +723,8 @@
             <div class="bg-[#F6C453]/10 border-b border-[#F6C453]/20 px-7 py-3 flex items-center gap-3">
                 <i class="fas fa-circle-info text-[#F6C453] text-sm"></i>
                 <p class="text-xs text-white/80">Este Geoportal permite visualizar, analizar y colaborar con información
-                    geográfica del estado de <strong class="text-[#F6C453]">Veracruz, México</strong>, a diferentes
-                    escalas territoriales usando datos oficiales de <strong class="text-[#F6C453]">INEGI 2020</strong>.
+                    geográfica de los estados de <strong class="text-[#F6C453]">Veracruz y Chiapas, México</strong>, a diferentes
+                    escalas territoriales usando datos oficiales de <strong class="text-[#F6C453]">INEGI 2020</strong> y capas temáticas.
                 </p>
             </div>
 
@@ -676,29 +740,31 @@
                         <h3 class="font-black text-white text-sm uppercase tracking-wider">1. Escalas de Visualización
                         </h3>
                     </div>
-                    <div class="bg-black/20 p-5 grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+                    <div class="bg-black/20 p-5 grid grid-cols-2 md:grid-cols-3 gap-3 text-xs">
                         <div class="bg-white/5 border border-white/10 rounded-xl p-3 text-center">
                             <i class="fas fa-globe-americas text-blue-300 text-lg mb-2"></i>
                             <p class="font-bold text-white">Nacional</p>
-                            <p class="opacity-60 mt-1">Polígono de México completo con estadísticas generales de
-                                población.</p>
+                            <p class="opacity-60 mt-1">Polígono de México completo con estadísticas generales de población.</p>
                         </div>
                         <div class="bg-white/5 border border-white/10 rounded-xl p-3 text-center">
-                            <i class="fas fa-map text-green-300 text-lg mb-2"></i>
-                            <p class="font-bold text-white">Estatal</p>
-                            <p class="opacity-60 mt-1">Límite del estado de Veracruz con datos demográficos 2020.</p>
+                            <i class="fas fa-umbrella-beach text-green-300 text-lg mb-2"></i>
+                            <p class="font-bold text-white">Veracruz</p>
+                            <p class="opacity-60 mt-1">Límite estatal, municipios y 10 regiones geográficas.</p>
                         </div>
                         <div class="bg-white/5 border border-white/10 rounded-xl p-3 text-center">
-                            <i class="fas fa-map-marked-alt text-orange-300 text-lg mb-2"></i>
-                            <p class="font-bold text-white">Municipios</p>
-                            <p class="opacity-60 mt-1">Mapa coroplético con los 212 municipios coloreados por densidad
-                                poblacional. Haz clic en cualquiera para ver su gráfica demográfica.</p>
+                            <i class="fas fa-mountain text-orange-300 text-lg mb-2"></i>
+                            <p class="font-bold text-white">Chiapas</p>
+                            <p class="opacity-60 mt-1">Límite estatal, municipios, 16 regiones y municipios olvidados.</p>
                         </div>
                         <div class="bg-white/5 border border-[#F6C453]/30 rounded-xl p-3 text-center">
                             <i class="fas fa-university text-[#F6C453] text-lg mb-2"></i>
                             <p class="font-bold text-[#F6C453]">Regiones UV</p>
-                            <p class="opacity-60 mt-1">Las 5 regiones de la Universidad Veracruzana con sus facultades y
-                                campus.</p>
+                            <p class="opacity-60 mt-1">Las 5 regiones de la Universidad Veracruzana con sus facultades.</p>
+                        </div>
+                        <div class="bg-white/5 border border-white/10 rounded-xl p-3 text-center">
+                            <i class="fas fa-chart-line text-blue-300 text-lg mb-2"></i>
+                            <p class="font-bold text-white">Análisis Temático</p>
+                            <p class="opacity-60 mt-1">Capas superpuestas de Marginación y Crecimiento Poblacional 2010-2020.</p>
                         </div>
                     </div>
                 </section>
@@ -953,7 +1019,7 @@
                             <div class="flex justify-between"><span class="opacity-50">Idioma</span><span
                                     class="font-bold">Español (México)</span></div>
                             <div class="flex justify-between"><span class="opacity-50">Cobertura</span><span
-                                    class="font-bold">Veracruz, México</span></div>
+                                    class="font-bold">Veracruz y Chiapas, México</span></div>
                             <div class="flex justify-between"><span class="opacity-50">Escala mínima</span><span
                                     class="font-bold">1:250,000</span></div>
                             <div class="flex justify-between"><span class="opacity-50">Temática ISO</span><span
@@ -1001,7 +1067,7 @@
                             <div>
                                 <p class="font-bold text-white">Marco Geoestadístico Nacional — INEGI</p>
                                 <p class="opacity-60 mt-0.5">Cartografía vectorial oficial que define la delimitación
-                                    política y administrativa del estado de Veracruz, integrada mediante polígonos
+                                    política y administrativa de Veracruz y Chiapas, integrada mediante polígonos
                                     geoestadísticos para la gestión y análisis territorial.</p>
                             </div>
                         </div>
@@ -1013,8 +1079,7 @@
                             <div>
                                 <p class="font-bold text-white">Censo de Población y Vivienda — INEGI</p>
                                 <p class="opacity-60 mt-0.5">Base de datos demográfica desagregada a nivel municipal que
-                                    incluye indicadores de volumen poblacional, estructura por sexo y edad, y
-                                    distribución territorial en el estado de Veracruz.</p>
+                                    incluye indicadores poblacionales, crecimiento demográfico e índices de marginación territorial.</p>
                             </div>
                         </div>
                         <div class="border-t border-white/5"></div>
