@@ -127,6 +127,7 @@ var layers = {
     estatal: L.featureGroup(),
     municipios: L.featureGroup(),
     regionesUV: L.featureGroup(),
+    regionesVer: L.featureGroup(),
     servicios: { 1: L.layerGroup(), 2: L.layerGroup(), 3: L.layerGroup(), 4: L.layerGroup(), 5: L.layerGroup() }
 };
 
@@ -215,6 +216,7 @@ function clearAll() {
     try { map.removeLayer(layers.estatal); } catch (e) { }
     try { map.removeLayer(layers.municipios); } catch (e) { }
     try { map.removeLayer(layers.regionesUV); } catch (e) { }
+    try { map.removeLayer(layers.regionesVer); } catch (e) { }
 }
 
 function showNational() {
@@ -545,6 +547,152 @@ function showUVRegions() {
         layers.regionesUV.addTo(map);
         try { map.fitBounds(layer.getBounds(), { padding: [30, 30] }); } catch (e) { }
     }).catch(e => console.warn("Error UV municipios", e));
+}
+
+let regionesVerGeoJSONs = {};
+
+function showVeracruzRegions() {
+    if (currentScale === 'regiones_ver') {
+        currentScale = null;
+        setActiveBtn(null);
+        clearAll();
+        document.getElementById('map-legend').innerHTML = '';
+        return;
+    }
+
+    currentScale = 'regiones_ver';
+    setActiveBtn('btn-regiones-ver');
+    clearAll();
+    actualizarLeyenda('regiones_veracruz');
+
+    if (layers.regionesVer && layers.regionesVer.getLayers && layers.regionesVer.getLayers().length > 0) {
+        layers.regionesVer.addTo(map);
+        try { map.fitBounds(layers.regionesVer.getBounds(), { padding: [30, 30] }); } catch (e) { }
+        return;
+    }
+
+    const regionFiles = {
+        'Huasteca Alta': { file: 'HuastecaAlta.geojson', color: '#3B82F6' },
+        'Huasteca Baja': { file: 'HuastecaBaja.geojson', color: '#60A5FA' },
+        'Totonaca': { file: 'Totonaca.geojson', color: '#F97316' },
+        'Nautla': { file: 'Nautla1.geojson', color: '#FB923C' },
+        'Capital': { file: 'Capital.geojson', color: '#10B981' },
+        'Grandes Montañas': { file: 'AltasMontanas.geojson', color: '#84CC16' },
+        'Sotavento': { file: 'Sotavento.geojson', color: '#EF4444' },
+        'Papaloapan': { file: 'Papaloapan.geojson', color: '#F43F5E' },
+        'Los Tuxtlas': { file: 'LosTuxtlas.geojson', color: '#8B5CF6' },
+        'Olmeca': { file: 'Olmeca.geojson', color: '#EC4899' }
+    };
+
+    if (typeof showNotification === 'function') {
+        showNotification('Cargando las 10 regiones de Veracruz...', 'info');
+    }
+
+    const promises = Object.entries(regionFiles).map(([regionName, info]) => {
+        if (regionesVerGeoJSONs[regionName]) {
+            return Promise.resolve({ name: regionName, data: regionesVerGeoJSONs[regionName], color: info.color });
+        }
+        return fetch(info.file)
+            .then(r => r.json())
+            .then(data => {
+                regionesVerGeoJSONs[regionName] = data;
+                return { name: regionName, data: data, color: info.color };
+            })
+            .catch(e => {
+                console.error(`Error cargando la región ${regionName}:`, e);
+                return null;
+            });
+    });
+
+    Promise.all(promises).then(results => {
+        const activeResults = results.filter(r => r !== null);
+        
+        activeResults.forEach(res => {
+            const geoJsonLayer = L.geoJSON(res.data, {
+                style: () => ({
+                    color: 'white',
+                    weight: 1.5,
+                    fillColor: res.color,
+                    fillOpacity: 0.65,
+                    opacity: 1
+                }),
+                onEachFeature: (f, l) => {
+                    l.on('click', (e) => {
+                        if (window.pipMode) {
+                            try {
+                                const polygon = f.geometry;
+                                let count = 0;
+                                if (typeof customPoints !== 'undefined') {
+                                    customPoints.forEach(p => {
+                                        const point = turf.point([p.lng, p.lat]);
+                                        if (turf.booleanPointInPolygon(point, polygon)) count++;
+                                    });
+                                }
+                                const msg = `<div style="text-align:center">
+                                    <b style="color:#F6C453">ANÁLISIS ESPACIAL</b><br>
+                                    Municipio: <b>${f.properties.NOMGEO}</b><br>
+                                    Región: <b>${res.name}</b><br>
+                                    <hr style="margin:5px 0; border:0; border-top:1px solid rgba(255,255,255,0.2)">
+                                    Se encontraron <b style="font-size:14px">${count}</b> puntos personalizados dentro.
+                                </div>`;
+                                L.popup().setLatLng(e.latlng).setContent(msg).openOn(map);
+                            } catch (err) { console.error('Error PiP:', err); }
+                            return;
+                        }
+                        if (window.analysisMode) return;
+
+                        try { highlightLayer.clearLayers(); } catch (e) { }
+                        if (highlightLabel) { try { map.removeLayer(highlightLabel); } catch (e) { }; highlightLabel = null; }
+
+                        highlightLayer.addData(f);
+                        highlightLayer.eachLayer(layer => {
+                            layer.bindTooltip(`${f.properties.NOMGEO}<br><small style="opacity:0.8">Región: ${res.name}</small>`, {
+                                permanent: false,
+                                direction: 'center',
+                                className: 'custom-municipio-tooltip',
+                                sticky: true
+                            });
+                        });
+                        applyGlowToLayer(highlightLayer);
+
+                        const normalizeStr = str => str ? str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().trim() : "";
+                        const searchName = normalizeStr(f.properties.NOMGEO);
+                        
+                        if (poblacion && poblacion.municipios) {
+                            const pData = poblacion.municipios.find(x => normalizeStr(x.NOMGEO) === searchName);
+                            if (pData) {
+                                pData.NOMGEO = `${f.properties.NOMGEO} (${res.name})`;
+                                actualizarLeyenda('regiones_veracruz', pData);
+                                pData.NOMGEO = f.properties.NOMGEO;
+                            }
+                        }
+
+                        if (window.ui && window.ui.mostrarInfoMunicipio) {
+                            window.ui.mostrarInfoMunicipio(f.properties.CVEGEO, f.properties.NOMGEO);
+                        }
+                    });
+
+                    l.bindTooltip(`${f.properties.NOMGEO} (${res.name})`, {
+                        direction: 'center',
+                        className: 'text-xs'
+                    });
+                }
+            });
+            layers.regionesVer.addLayer(geoJsonLayer);
+        });
+
+        layers.regionesVer.addTo(map);
+        try { map.fitBounds(layers.regionesVer.getBounds(), { padding: [30, 30] }); } catch (e) { }
+
+        if (typeof showNotification === 'function') {
+            showNotification('¡Regiones de Veracruz cargadas con éxito!', 'success');
+        }
+    }).catch(err => {
+        console.error("Error cargando regiones de Veracruz:", err);
+        if (typeof showNotification === 'function') {
+            showNotification('Error al cargar las regiones.', 'error');
+        }
+    });
 }
 
 function normalizar(txt) {

@@ -159,9 +159,9 @@
                             <i class="fas fa-chevron-down text-white/50 group-open:rotate-180 transition-transform"></i>
                         </summary>
                         <div class="p-2 space-y-1 mt-1 bg-black/20 rounded-lg border border-white/5">
-                            <button id="btn-nacional" onclick="showNational()" class="w-full text-left px-3 py-1.5 text-[10px] hover:bg-white/10 rounded-md transition-all"><i class="fas fa-map mr-1 text-white/50"></i> Ver México (Estados)</button>
+                            <button id="btn-nacional" onclick="showNational()" class="scale-btn w-full text-left px-3 py-1.5 text-[10px] hover:bg-white/10 rounded-md transition-all"><i class="fas fa-map mr-1 text-white/50"></i> Ver México (Estados)</button>
                             <!-- Futuro botón para regiones nacionales -->
-                            <button id="btn-nacional-regiones" class="w-full text-left px-3 py-1.5 text-[10px] hover:bg-white/10 rounded-md transition-all opacity-50 cursor-not-allowed" title="Próximamente"><i class="fas fa-layer-group mr-1 text-white/50"></i> Regiones Nacionales</button>
+                            <button id="btn-nacional-regiones" class="scale-btn w-full text-left px-3 py-1.5 text-[10px] hover:bg-white/10 rounded-md transition-all opacity-50 cursor-not-allowed" title="Próximamente"><i class="fas fa-layer-group mr-1 text-white/50"></i> Regiones Nacionales</button>
                         </div>
                     </details>
 
@@ -172,13 +172,13 @@
                             <i class="fas fa-chevron-down text-white/50 group-open:rotate-180 transition-transform"></i>
                         </summary>
                         <div class="p-2 space-y-1 mt-1 bg-black/20 rounded-lg border border-white/5">
-                            <button id="btn-estatal" onclick="showState()" class="w-full text-left px-3 py-1.5 text-[10px] hover:bg-white/10 rounded-md transition-all"><i class="fas fa-map mr-1 text-white/50"></i> Vista Estatal</button>
-                            <button id="btn-municipios" onclick="showMunicipalities()" class="w-full text-left px-3 py-1.5 text-[10px] hover:bg-white/10 rounded-md transition-all"><i class="fas fa-map-marked-alt mr-1 text-white/50"></i> Municipios</button>
-                            <!-- Futuro botón para las 10 regiones de Veracruz -->
-                            <button id="btn-regiones-ver" class="w-full text-left px-3 py-1.5 text-[10px] hover:bg-white/10 rounded-md transition-all opacity-50 cursor-not-allowed" title="Próximamente"><i class="fas fa-draw-polygon mr-1 text-white/50"></i> 10 Regiones de Veracruz</button>
+                            <button id="btn-estatal" onclick="showState()" class="scale-btn w-full text-left px-3 py-1.5 text-[10px] hover:bg-white/10 rounded-md transition-all"><i class="fas fa-map mr-1 text-white/50"></i> Vista Estatal</button>
+                            <button id="btn-municipios" onclick="showMunicipalities()" class="scale-btn w-full text-left px-3 py-1.5 text-[10px] hover:bg-white/10 rounded-md transition-all"><i class="fas fa-map-marked-alt mr-1 text-white/50"></i> Municipios</button>
+                            <!-- Botón para las 10 regiones de Veracruz -->
+                            <button id="btn-regiones-ver" onclick="showVeracruzRegions()" class="scale-btn w-full text-left px-3 py-1.5 text-[10px] hover:bg-white/10 rounded-md transition-all"><i class="fas fa-draw-polygon mr-1 text-white/50"></i> 10 Regiones de Veracruz</button>
                             
                             <div class="border-t border-white/10 my-1"></div>
-                            <button id="btn-regiones-uv" onclick="showUVRegions()" class="w-full text-left px-3 py-1.5 text-[10px] hover:bg-white/10 rounded-md transition-all" style="border-left: 2px solid #F6C453;"><i class="fas fa-university mr-1 text-[#F6C453]"></i> Regiones UV</button>
+                            <button id="btn-regiones-uv" onclick="showUVRegions()" class="scale-btn w-full text-left px-3 py-1.5 text-[10px] hover:bg-white/10 rounded-md transition-all" style="border-left: 2px solid #F6C453;"><i class="fas fa-university mr-1 text-[#F6C453]"></i> Regiones UV</button>
                             <div id="uv-menu-container" class="mt-1 pl-2"></div>
                         </div>
                     </details>
@@ -190,12 +190,12 @@
                             <i class="fas fa-chevron-down text-white/50 group-open:rotate-180 transition-transform"></i>
                         </summary>
                         <div class="p-2 space-y-1 mt-1 bg-black/20 rounded-lg border border-white/5">
-                            <button id="btn-chiapas-estatal" class="w-full text-left px-3 py-1.5 text-[10px] hover:bg-white/10 rounded-md transition-all opacity-50 cursor-not-allowed" title="Próximamente"><i class="fas fa-map mr-1 text-white/50"></i> Vista Estatal</button>
+                            <button id="btn-chiapas-estatal" class="scale-btn w-full text-left px-3 py-1.5 text-[10px] hover:bg-white/10 rounded-md transition-all opacity-50 cursor-not-allowed" title="Próximamente"><i class="fas fa-map mr-1 text-white/50"></i> Vista Estatal</button>
                             <!-- Futuro botón para las 16 regiones de Chiapas -->
-                            <button id="btn-regiones-chiapas" class="w-full text-left px-3 py-1.5 text-[10px] hover:bg-white/10 rounded-md transition-all opacity-50 cursor-not-allowed" title="Próximamente"><i class="fas fa-draw-polygon mr-1 text-white/50"></i> 16 Regiones de Chiapas</button>
+                            <button id="btn-regiones-chiapas" class="scale-btn w-full text-left px-3 py-1.5 text-[10px] hover:bg-white/10 rounded-md transition-all opacity-50 cursor-not-allowed" title="Próximamente"><i class="fas fa-draw-polygon mr-1 text-white/50"></i> 16 Regiones de Chiapas</button>
                             
                             <div class="border-t border-white/10 my-1"></div>
-                            <button id="btn-olvidados-chiapas" class="w-full text-left px-3 py-1.5 text-[10px] hover:bg-red-500/20 rounded-md transition-all border border-red-500/30 opacity-50 cursor-not-allowed" title="Próximamente"><i class="fas fa-exclamation-triangle mr-1 text-red-400"></i> Municipios Olvidados</button>
+                            <button id="btn-olvidados-chiapas" class="scale-btn w-full text-left px-3 py-1.5 text-[10px] hover:bg-red-500/20 rounded-md transition-all border border-red-500/30 opacity-50 cursor-not-allowed" title="Próximamente"><i class="fas fa-exclamation-triangle mr-1 text-red-400"></i> Municipios Olvidados</button>
                         </div>
                     </details>
 

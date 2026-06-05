@@ -1114,3 +1114,12 @@ path.leaflet-interactive:focus,
 .leaflet-tooltip-top:before, .leaflet-tooltip-bottom:before, .leaflet-tooltip-left:before, .leaflet-tooltip-right:before {
     display: none !important;
 }
+
+/* Estilo para botones de escala activos en la barra lateral */
+.scale-btn.active {
+    background-color: #F6C453 !important;
+    color: #006847 !important;
+    font-weight: 800 !important;
+    box-shadow: 0 0 10px rgba(246, 196, 83, 0.4) !important;
+}
+

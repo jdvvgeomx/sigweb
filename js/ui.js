@@ -101,7 +101,7 @@ function abrirPanel(titulo, contenido, pointId = null) {
 }
 
 function setActiveBtn(id) {
-    document.querySelectorAll('.map-control-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.scale-btn, .map-control-btn').forEach(b => b.classList.remove('active'));
     const btn = document.getElementById(id);
     if (btn) btn.classList.add('active');
 }
@@ -138,6 +138,23 @@ function actualizarLeyenda(tipo, data = null) {
         };
         Object.keys(uvColors).forEach(k => {
             content += `<div style="margin-top:6px"><span class="legend-color-box" style="background:${uvColors[k]}"></span> ${k}</div>`;
+        });
+    } else if (tipo === 'regiones_veracruz') {
+        content = `<b>Regiones de Veracruz</b><br>`;
+        const regColors = {
+            'Huasteca Alta': '#3B82F6',
+            'Huasteca Baja': '#60A5FA',
+            'Totonaca': '#F97316',
+            'Nautla': '#FB923C',
+            'Capital': '#10B981',
+            'Grandes Montañas': '#84CC16',
+            'Sotavento': '#EF4444',
+            'Papaloapan': '#F43F5E',
+            'Los Tuxtlas': '#8B5CF6',
+            'Olmeca': '#EC4899'
+        };
+        Object.keys(regColors).forEach(k => {
+            content += `<div style="margin-top:4px"><span class="legend-color-box" style="background:${regColors[k]}"></span> ${k}</div>`;
         });
     }
 
