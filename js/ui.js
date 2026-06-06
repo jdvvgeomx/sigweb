@@ -139,14 +139,14 @@ function actualizarLeyenda(tipo, data = null) {
         Object.keys(uvColors).forEach(k => {
             content += `<div style="margin-top:6px"><span class="legend-color-box" style="background:${uvColors[k]}"></span> ${k}</div>`;
         });
-        } else if (tipo === 'chiapas_estatal') {
-        content = <b>Chiapas Estatal</b><br><span class="legend-color-box" style="background:#f97316"></span> Chiapas;
+    } else if (tipo === 'chiapas_estatal') {
+        content = `<b>Chiapas Estatal</b><br><span class="legend-color-box" style="background:#f97316"></span> Chiapas`;
     } else if (tipo === 'chiapas_municipios') {
-        content = <b>Municipios de Chiapas</b><br><span class="legend-color-box" style="background:#fdba74"></span> Limites Municipales;
+        content = `<b>Municipios de Chiapas</b><br><span class="legend-color-box" style="background:#fdba74"></span> Límites Municipales`;
     } else if (tipo === 'chiapas_regiones') {
-        content = <b>16 Regiones de Chiapas</b><br><span class="legend-color-box" style="background:linear-gradient(90deg, #c2410c, #f97316)"></span> Múltiples Colores;
+        content = `<b>16 Regiones de Chiapas</b><br><span class="legend-color-box" style="background:linear-gradient(90deg, #c2410c, #f97316)"></span> Múltiples Colores`;
     } else if (tipo === 'chiapas_olvidados') {
-        content = <b>Municipios Olvidados</b><br><span class="legend-color-box" style="background:#ef4444"></span> Municipios Prioritarios;
+        content = `<b>Municipios Olvidados</b><br><span class="legend-color-box" style="background:#ef4444"></span> Municipios Prioritarios`;
     } else if (tipo === 'regiones_veracruz') {
         content = `<b>Regiones de Veracruz</b><br>`;
         const regColors = {
