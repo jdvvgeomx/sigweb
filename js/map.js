@@ -708,73 +708,32 @@ function showVeracruzRegions() {
         const activeResults = results.filter(r => r !== null);
         
         activeResults.forEach(res => {
-            const geoJsonLayer = L.geoJSON(res.data, {
+            let unioned = null;
+            try {
+                if (res.data.features && res.data.features.length > 0) {
+                    unioned = JSON.parse(JSON.stringify(res.data.features[0]));
+                    for (let i = 1; i < res.data.features.length; i++) {
+                        unioned = turf.union(unioned, res.data.features[i]);
+                    }
+                }
+            } catch (err) {
+                console.error("Error unioning features for region:", res.name, err);
+            }
+
+            const renderData = unioned || res.data;
+
+            const geoJsonLayer = L.geoJSON(renderData, {
                 style: () => ({
                     color: 'white',
-                    weight: 1.5,
+                    weight: 2,
                     fillColor: res.color,
-                    fillOpacity: 0.65,
+                    fillOpacity: 0.5,
                     opacity: 1
                 }),
                 onEachFeature: (f, l) => {
-                    l.on('click', (e) => {
-                        if (window.pipMode) {
-                            try {
-                                const polygon = f.geometry;
-                                let count = 0;
-                                if (typeof customPoints !== 'undefined') {
-                                    customPoints.forEach(p => {
-                                        const point = turf.point([p.lng, p.lat]);
-                                        if (turf.booleanPointInPolygon(point, polygon)) count++;
-                                    });
-                                }
-                                const msg = `<div style="text-align:center">
-                                    <b style="color:#F6C453">ANÁLISIS ESPACIAL</b><br>
-                                    Municipio: <b>${f.properties.NOMGEO}</b><br>
-                                    Región: <b>${res.name}</b><br>
-                                    <hr style="margin:5px 0; border:0; border-top:1px solid rgba(255,255,255,0.2)">
-                                    Se encontraron <b style="font-size:14px">${count}</b> puntos personalizados dentro.
-                                </div>`;
-                                L.popup().setLatLng(e.latlng).setContent(msg).openOn(map);
-                            } catch (err) { console.error('Error PiP:', err); }
-                            return;
-                        }
-                        if (window.analysisMode) return;
-
-                        try { highlightLayer.clearLayers(); } catch (e) { }
-                        if (highlightLabel) { try { map.removeLayer(highlightLabel); } catch (e) { }; highlightLabel = null; }
-
-                        highlightLayer.addData(f);
-                        highlightLayer.eachLayer(layer => {
-                            layer.bindTooltip(`${f.properties.NOMGEO}<br><small style="opacity:0.8">Región: ${res.name}</small>`, {
-                                permanent: false,
-                                direction: 'center',
-                                className: 'custom-municipio-tooltip',
-                                sticky: true
-                            });
-                        });
-                        applyGlowToLayer(highlightLayer);
-
-                        const normalizeStr = str => str ? str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().trim() : "";
-                        const searchName = normalizeStr(f.properties.NOMGEO);
-                        
-                        if (poblacion && poblacion.municipios) {
-                            const pData = poblacion.municipios.find(x => normalizeStr(x.NOMGEO) === searchName);
-                            if (pData) {
-                                pData.NOMGEO = `${f.properties.NOMGEO} (${res.name})`;
-                                actualizarLeyenda('regiones_veracruz', pData);
-                                pData.NOMGEO = f.properties.NOMGEO;
-                            }
-                        }
-
-                        if (window.ui && window.ui.mostrarInfoMunicipio) {
-                            window.ui.mostrarInfoMunicipio(f.properties.CVEGEO, f.properties.NOMGEO);
-                        }
-                    });
-
-                    l.bindTooltip(`${f.properties.NOMGEO} (${res.name})`, {
-                        direction: 'center',
-                        className: 'text-xs'
+                    l.bindTooltip(`<b>Región: ${res.name}</b>`, {
+                        sticky: true,
+                        className: 'custom-tooltip'
                     });
                 }
             });
@@ -1048,10 +1007,14 @@ function showChiapasMunicipalities() {
     const render = (data) => {
         layers.chiapasMunicipios.clearLayers();
         const layer = L.geoJSON(data, {
-            style: { color: '#ea580c', weight: 1, fillOpacity: 0.1, fillColor: '#fdba74' },
+            style: (feature) => {
+                const pob = feature.properties.POB1 || 0;
+                return { fillColor: getColor(pob), weight: 1, opacity: 1, color: 'white', fillOpacity: 0.7 };
+            },
             onEachFeature: (feature, layer) => {
                 const nom = feature.properties.NOMGEO || 'Desconocido';
-                layer.bindTooltip(`<b>${nom}</b>`, { sticky: true, className: 'custom-tooltip' });
+                const pob = feature.properties.POB1 || 0;
+                layer.bindTooltip(`<b>${nom}</b><br>Población: <b>${pob.toLocaleString()}</b>`, { sticky: true, className: 'custom-tooltip' });
             }
         }).addTo(layers.chiapasMunicipios);
         try { map.fitBounds(layer.getBounds(), { padding: [30, 30] }); } catch (e) { }
@@ -1060,10 +1023,20 @@ function showChiapasMunicipalities() {
     if (chiapasMunicipiosGeoJSON) {
         render(chiapasMunicipiosGeoJSON);
     } else {
-        fetch('chiapas_municipios.geojson').then(r => r.json()).then(data => {
-            chiapasMunicipiosGeoJSON = data;
-            render(data);
-        }).catch(e => console.warn("Error", e));
+        Promise.all([
+            fetch('chiapas_municipios.geojson').then(r => r.json()),
+            fetch('marginacion_municipal_chiapas_2020.geojson').then(r => r.json())
+        ]).then(([munData, margData]) => {
+            const pMap = {};
+            margData.features.forEach(f => {
+                pMap[f.properties.CVEGEO] = f.properties.POB1 || 0;
+            });
+            munData.features.forEach(f => {
+                f.properties.POB1 = pMap[f.properties.CVEGEO] || 0;
+            });
+            chiapasMunicipiosGeoJSON = munData;
+            render(munData);
+        }).catch(e => console.warn("Error cargando municipios de Chiapas", e));
     }
     layers.chiapasMunicipios.addTo(map);
     checkMarginacionOverlay();

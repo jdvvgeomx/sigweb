@@ -142,7 +142,14 @@ function actualizarLeyenda(tipo, data = null) {
     } else if (tipo === 'chiapas_estatal') {
         content = `<b>Chiapas Estatal</b><br><span class="legend-color-box" style="background:#f97316"></span> Chiapas`;
     } else if (tipo === 'chiapas_municipios') {
-        content = `<b>Municipios de Chiapas</b><br><span class="legend-color-box" style="background:#fdba74"></span> Límites Municipales`;
+        content = `<b>Población Municipal (Chiapas)</b><br>
+            <div class="legend-item"><span class="legend-color-box" style="background:#bd0026"></span> +500,000</div>
+            <div class="legend-item"><span class="legend-color-box" style="background:#f03b20"></span> 250,000 - 500,000</div>
+            <div class="legend-item"><span class="legend-color-box" style="background:#fd8d3c"></span> 100,000 - 250,000</div>
+            <div class="legend-item"><span class="legend-color-box" style="background:#feb24c"></span> 50,000 - 100,000</div>
+            <div class="legend-item"><span class="legend-color-box" style="background:#fed976"></span> 25,000 - 50,000</div>
+            <div class="legend-item"><span class="legend-color-box" style="background:#ffeda0"></span> 10,000 - 25,000</div>
+            <div class="legend-item"><span class="legend-color-box" style="background:#ffffcc"></span> < 10,000</div>`;
     } else if (tipo === 'chiapas_regiones') {
         content = `<b>16 Regiones de Chiapas</b><br><span class="legend-color-box" style="background:linear-gradient(90deg, #c2410c, #f97316)"></span> Múltiples Colores`;
     } else if (tipo === 'chiapas_olvidados') {

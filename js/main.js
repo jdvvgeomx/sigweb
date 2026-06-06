@@ -17,8 +17,6 @@ window.onload = function () {
         .then(r => r.json())
         .then(data => {
             nacionalGeoJSON = data;
-            const l = L.geoJSON(data);
-            map.fitBounds(l.getBounds(), { padding: [30, 30] });
         })
         .catch(e => console.warn("Error precarga nacional", e));
 
