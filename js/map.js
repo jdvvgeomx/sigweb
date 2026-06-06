@@ -1197,15 +1197,15 @@ function applyCrecimientoOverlay() {
                 const p2020 = (feature.properties.Pob_2020 || 0).toLocaleString();
                 const inc = (feature.properties.Inc_00_20 || 0).toLocaleString();
                 const pct = feature.properties.Pct_Inc_00_20 || 0;
-                layer.bindTooltip(
-                    <b></b><br>
+                layer.bindTooltip(`
+                    <b>${nom}</b><br>
                     <hr style="margin:2px 0;border-color:rgba(255,255,255,0.2);">
-                    Población 2000: <br>
-                    Población 2010: <br>
-                    Población 2020: <br>
-                    Crecimiento (2000-2020): <b> habs.</b><br>
-                    Aumento Porcentual: <b>%</b>
-                , { sticky: true, className: 'custom-tooltip' });
+                    Población 2000: ${p2000}<br>
+                    Población 2010: ${p2010}<br>
+                    Población 2020: ${p2020}<br>
+                    Crecimiento (2000-2020): <b>${inc} habs.</b><br>
+                    Aumento Porcentual: <b>${pct.toFixed ? pct.toFixed(2) : pct}%</b>
+                `, { sticky: true, className: 'custom-tooltip' });
             }
         }).addTo(layers.crecimiento);
         layers.crecimiento.addTo(map);
