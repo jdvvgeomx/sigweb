@@ -560,7 +560,7 @@ function showUVRegions() {
                         setTimeout(() => l.setStyle({ fillOpacity: 0.5 }), 500);
                     });
                     const total = f.properties.TOTAL_INSTALACIONES || 0;
-                    l.bindTooltip(<b></b><br>Instalaciones: , { direction: 'center', className: 'text-xs' });
+                    l.bindTooltip(`<b>${regionName}</b><br>Instalaciones: ${total}`, { direction: 'center', className: 'text-xs' });
                 }
             }
         }).addTo(layers.regionesUV);
@@ -974,7 +974,7 @@ function showChiapasMunicipalities() {
             style: { color: '#ea580c', weight: 1, fillOpacity: 0.1, fillColor: '#fdba74' },
             onEachFeature: (feature, layer) => {
                 const nom = feature.properties.NOMGEO || 'Desconocido';
-                layer.bindTooltip(<b></b>, { sticky: true, className: 'custom-tooltip' });
+                layer.bindTooltip(`<b>${nom}</b>`, { sticky: true, className: 'custom-tooltip' });
             }
         }).addTo(layers.chiapasMunicipios);
         try { map.fitBounds(layer.getBounds(), { padding: [30, 30] }); } catch (e) { }
@@ -1012,7 +1012,7 @@ function showChiapasRegions() {
             },
             onEachFeature: (feature, layer) => {
                 const nom = feature.properties.REGION || feature.properties.NOM_REGION || 'Región';
-                layer.bindTooltip(<b></b>, { sticky: true, className: 'custom-tooltip' });
+                layer.bindTooltip(`<b>${nom}</b>`, { sticky: true, className: 'custom-tooltip' });
             }
         }).addTo(layers.chiapasRegiones);
         try { map.fitBounds(layer.getBounds(), { padding: [30, 30] }); } catch (e) { }
@@ -1048,7 +1048,7 @@ function showChiapasForgotten() {
             style: { color: '#b91c1c', weight: 2, fillOpacity: 0.5, fillColor: '#ef4444' },
             onEachFeature: (feature, layer) => {
                 const nom = feature.properties.NOMGEO || 'Desconocido';
-                layer.bindTooltip(<b></b><br><span style="color:#ef4444;font-size:10px;">Municipio Olvidado</span>, { sticky: true, className: 'custom-tooltip' });
+                layer.bindTooltip(`<b>${nom}</b><br><span style="color:#ef4444;font-size:10px;">Municipio Olvidado</span>`, { sticky: true, className: 'custom-tooltip' });
             }
         }).addTo(layers.chiapasOlvidados);
         try { map.fitBounds(layer.getBounds(), { padding: [30, 30] }); } catch (e) { }
@@ -1133,7 +1133,7 @@ function applyMarginacionOverlay() {
                 const nom = feature.properties.NOM_ENT || feature.properties.NOMGEO || feature.properties.NOM_MUN || 'Desconocido';
                 const gm = feature.properties.GM_2020 || feature.properties.GM || feature.properties.Grado || 'N/D';
                 const im = feature.properties.IM_2020 || feature.properties.IM || feature.properties.Indice || 'N/D';
-                layer.bindTooltip(<b></b><br>Grado de Marginación: <b></b><br>Índice: , { sticky: true, className: 'custom-tooltip' });
+                layer.bindTooltip(`<b>${nom}</b><br>Grado de Marginación: <b>${gm}</b><br>Índice: ${im}`, { sticky: true, className: 'custom-tooltip' });
             }
         }).addTo(layers.marginacion);
         layers.marginacion.addTo(map);
