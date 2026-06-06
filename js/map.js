@@ -124,6 +124,7 @@ map.addControl(new compassControl());
 
 var layers = {
     nacional: L.featureGroup(),
+    regionesNacionales: L.featureGroup(),
     estatal: L.featureGroup(),
     municipios: L.featureGroup(),
     regionesUV: L.featureGroup(),
@@ -219,6 +220,7 @@ function clearAll() {
         highlightLabel = null;
     }
     try { map.removeLayer(layers.nacional); } catch (e) { }
+    try { map.removeLayer(layers.regionesNacionales); } catch (e) { }
     try { map.removeLayer(layers.estatal); } catch (e) { }
     try { map.removeLayer(layers.municipios); } catch (e) { }
     try { map.removeLayer(layers.regionesUV); } catch (e) { }
@@ -311,6 +313,78 @@ function showNational() {
             });
         }, 100);
     }
+}
+
+let regionesNacionalesGeoJSON = null;
+
+function showNationalRegions() {
+    if (currentScale === 'regiones_nacionales') {
+        currentScale = null;
+        setActiveBtn(null);
+        clearAll();
+        document.getElementById('map-legend').innerHTML = '';
+        return;
+    }
+
+    currentScale = 'regiones_nacionales';
+    setActiveBtn('btn-nacional-regiones');
+    clearAll();
+    actualizarLeyenda('regiones_nacionales');
+
+    const render = (data) => {
+        layers.regionesNacionales.clearLayers();
+        const layer = L.geoJSON(data, {
+            style: (feature) => {
+                return {
+                    color: '#1e3a8a',
+                    weight: 2,
+                    fillOpacity: 0.4,
+                    fillColor: getRandomColor(feature.properties.ZONA_ECONO)
+                };
+            },
+            onEachFeature: (feature, layer) => {
+                const nom = feature.properties.ZONA_ECONO || 'Región';
+                const estados = feature.properties.ESTADOS || '';
+                const cultivos = feature.properties.CULTIVO || '';
+                const primarias = feature.properties.ACT_PRIM || '';
+                layer.bindTooltip(`<b>Región: ${nom}</b>`, { sticky: true, className: 'custom-tooltip' });
+                
+                layer.on('click', () => {
+                    abrirPanel(`Información de Región: ${nom}`, `
+                        <div class="mb-4">
+                            <p class="text-xs uppercase tracking-widest text-[#F6C453] mb-1 font-bold">Región de México</p>
+                            <h3 class="text-lg font-bold mb-3">${nom}</h3>
+                            <div class="bg-white/10 rounded-xl p-3 mb-3 border border-white/5">
+                                <p class="text-[10px] uppercase opacity-60 mb-0.5">Estados Integrantes</p>
+                                <p class="text-xs font-semibold text-white/90">${estados}</p>
+                            </div>
+                            <div class="bg-white/10 rounded-xl p-3 mb-3 border border-white/5">
+                                <p class="text-[10px] uppercase opacity-60 mb-0.5">Actividades Primarias / Cultivos</p>
+                                <p class="text-xs font-semibold text-white/90">${cultivos}</p>
+                            </div>
+                            <div class="bg-white/10 rounded-xl p-3 mb-3 border border-white/5">
+                                <p class="text-[10px] uppercase opacity-60 mb-0.5">Descripción General</p>
+                                <p class="text-xs font-semibold text-white/90">${primarias}</p>
+                            </div>
+                        </div>
+                    `);
+                });
+            }
+        }).addTo(layers.regionesNacionales);
+        try { map.fitBounds(layer.getBounds(), { padding: [30, 30] }); } catch (e) { }
+    };
+
+    if (regionesNacionalesGeoJSON) {
+        render(regionesNacionalesGeoJSON);
+    } else {
+        fetch('Regiones-Mexico.geojson').then(r => r.json()).then(data => {
+            regionesNacionalesGeoJSON = data;
+            render(data);
+        }).catch(e => console.warn("Error cargando regiones de México", e));
+    }
+    layers.regionesNacionales.addTo(map);
+    checkMarginacionOverlay();
+    checkCrecimientoOverlay();
 }
 
 function showState() {

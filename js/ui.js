@@ -164,6 +164,21 @@ function actualizarLeyenda(tipo, data = null) {
         Object.keys(regColors).forEach(k => {
             content += `<div style="margin-top:4px"><span class="legend-color-box" style="background:${regColors[k]}"></span> ${k}</div>`;
         });
+    } else if (tipo === 'regiones_nacionales') {
+        content = `<b>Regiones de México</b><br>`;
+        const nacColors = {
+            'Noroeste': '#3B82F6',
+            'Norte': '#10B981',
+            'Noreste': '#F59E0B',
+            'Centro occidente': '#8B5CF6',
+            'Centro sur': '#EC4899',
+            'Pacífico Sur': '#EF4444',
+            'Golfo de México': '#14B8A6',
+            'Peninsula de Yucatán': '#F43F5E'
+        };
+        Object.keys(nacColors).forEach(k => {
+            content += `<div style="margin-top:4px"><span class="legend-color-box" style="background:${nacColors[k]}"></span> ${k}</div>`;
+        });
     }
 
     if (p && p.POB1) {
