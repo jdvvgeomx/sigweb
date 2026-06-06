@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 
 <head>
@@ -8,12 +8,12 @@
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
     <title>Geoportal Interactivo</title>
-    <!-- Favicon generado por código (SVG) -->
+    <!-- Favicon generado por cÃ³digo (SVG) -->
     <link rel="icon"
         href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><defs><linearGradient id=%22g%22 x1=%220%25%22 y1=%220%25%22 x2=%22100%25%22 y2=%22100%25%22><stop offset=%220%25%22 style=%22stop-color:%23006847;stop-opacity:1%22 /><stop offset=%22100%25%22 style=%22stop-color:%23F6C453;stop-opacity:1%22 /></linearGradient></defs><circle cx=%2250%22 cy=%2250%22 r=%2248%22 fill=%22url(%23g)%22 /><path d=%22M50 20c-11 0-20 9-20 20 0 15 20 40 20 40s20-25 20-40c0-11-9-20-20-20zm0 30a10 10 0 110-20 10 10 0 010 20z%22 fill=%22white%22 /><path d=%22M35 45h30M40 35c0 8.3 4.5 15 10 15s10-6.7 10-15%22 fill=%22none%22 stroke=%22rgba(255,255,255,0.3)%22 stroke-width=%222%22/></svg>">
 
 
-    <link rel="stylesheet" href="css/styles.css?v=2">
+    <link rel="stylesheet" href="css/styles.css?v=3">
 
     <!-- External Libraries -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -47,7 +47,7 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
     <script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
     <style>
-        /* Estilos para Popups de Gráficas */
+        /* Estilos para Popups de GrÃ¡ficas */
         .municipio-chart-popup .leaflet-popup-content-wrapper {
             background: rgba(10, 25, 20, 0.95) !important;
             backdrop-filter: blur(8px);
@@ -91,7 +91,7 @@
                 </h1>
             </div>
 
-            <!-- Centro: Título Mapa -->
+            <!-- Centro: TÃ­tulo Mapa -->
             <div class="flex-[1.5] text-center">
                 <h2
                     class="text-sm md:text-2xl font-black text-[#F6C453] tracking-wider uppercase drop-shadow-md whitespace-nowrap">
@@ -105,7 +105,7 @@
                 <div class="border-l border-[#F6C453]/30 md:border-l-2 pl-2 md:pl-4">
                     <p
                         class="text-[9px] md:text-sm font-semibold leading-tight uppercase tracking-tight md:tracking-normal">
-                        Licenciatura <br class="hidden sm:block"> en Geografía
+                        Licenciatura <br class="hidden sm:block"> en GeografÃ­a
                     </p>
                 </div>
                 <div id="auth-container">
@@ -116,16 +116,16 @@
                     <div id="user-logged-in" class="hidden flex items-center gap-1 md:gap-3">
                         <span id="username-display" class="text-[10px] md:text-sm font-black text-[#F6C453] tracking-tight"></span>
                         <div class="flex items-center gap-1">
-                            <button onclick="ui.openPasswordModal()" title="Cambiar Contraseña"
+                            <button onclick="ui.openPasswordModal()" title="Cambiar ContraseÃ±a"
                                 class="text-[#F6C453]/70 hover:text-white transition-colors p-1">
                                 <i class="fas fa-key text-[10px] md:text-sm"></i>
                             </button>
-                            <button id="admin-panel-btn-top" onclick="openAdminTable()" title="Panel de Gestión"
+                            <button id="admin-panel-btn-top" onclick="openAdminTable()" title="Panel de GestiÃ³n"
                                 class="hidden text-[#F6C453] hover:text-white transition-colors p-1 flex items-center gap-1 border border-[#F6C453]/40 rounded-md px-2 ml-1">
                                 <i class="fas fa-hammer text-[10px] md:text-sm"></i>
                                 <span class="text-[9px] font-black uppercase">ADMIN</span>
                             </button>
-                            <button onclick="logout()" title="Cerrar Sesión"
+                            <button onclick="logout()" title="Cerrar SesiÃ³n"
                                 class="text-white/60 hover:text-red-400 font-bold text-[10px] md:text-xs uppercase p-1">
                                 <i class="fas fa-sign-out-alt"></i>
                             </button>
@@ -141,13 +141,13 @@
     <main>
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 h-full">
 
-            <!-- Columna del Menú -->
+            <!-- Columna del MenÃº -->
             <aside class="lg:col-span-3 xl:col-span-2 order-2 lg:order-1 sidebar-container">
 
-                <!-- ══════════ SECCIÓN 1: NAVEGACIÓN ══════════ -->
+                <!-- â•â•â•â•â•â•â•â•â•â• SECCIÃ“N 1: NAVEGACIÃ“N â•â•â•â•â•â•â•â•â•â• -->
                 <div class="glass-panel">
                     <p class="text-[9px] uppercase tracking-widest text-[#F6C453] font-black opacity-70 mb-3">
-                        <i class="fas fa-map mr-1"></i> Navegación del Mapa
+                        <i class="fas fa-map mr-1"></i> NavegaciÃ³n del Mapa
                     </p>
 
                     <h2 class="font-semibold mb-2 text-sm">Escalas</h2>
@@ -159,9 +159,9 @@
                             <i class="fas fa-chevron-down text-white/50 group-open:rotate-180 transition-transform"></i>
                         </summary>
                         <div class="p-2 space-y-1 mt-1 bg-black/20 rounded-lg border border-white/5">
-                            <button id="btn-nacional" onclick="showNational()" class="scale-btn w-full text-left px-3 py-1.5 text-[10px] hover:bg-white/10 rounded-md transition-all"><i class="fas fa-map mr-1 text-white/50"></i> Ver México (Estados)</button>
-                            <!-- Futuro botón para regiones nacionales -->
-                            <button id="btn-nacional-regiones" class="scale-btn w-full text-left px-3 py-1.5 text-[10px] hover:bg-white/10 rounded-md transition-all opacity-50 cursor-not-allowed" title="Próximamente"><i class="fas fa-layer-group mr-1 text-white/50"></i> Regiones Nacionales</button>
+                            <button id="btn-nacional" onclick="showNational()" class="scale-btn w-full text-left px-3 py-1.5 text-[10px] hover:bg-white/10 rounded-md transition-all"><i class="fas fa-map mr-1 text-white/50"></i> Ver MÃ©xico (Estados)</button>
+                            <!-- Futuro botÃ³n para regiones nacionales -->
+                            <button id="btn-nacional-regiones" class="scale-btn w-full text-left px-3 py-1.5 text-[10px] hover:bg-white/10 rounded-md transition-all opacity-50 cursor-not-allowed" title="PrÃ³ximamente"><i class="fas fa-layer-group mr-1 text-white/50"></i> Regiones Nacionales</button>
                         </div>
                     </details>
 
@@ -174,7 +174,7 @@
                         <div class="p-2 space-y-1 mt-1 bg-black/20 rounded-lg border border-white/5">
                             <button id="btn-estatal" onclick="showState()" class="scale-btn w-full text-left px-3 py-1.5 text-[10px] hover:bg-white/10 rounded-md transition-all"><i class="fas fa-map mr-1 text-white/50"></i> Vista Estatal</button>
                             <button id="btn-municipios" onclick="showMunicipalities()" class="scale-btn w-full text-left px-3 py-1.5 text-[10px] hover:bg-white/10 rounded-md transition-all"><i class="fas fa-map-marked-alt mr-1 text-white/50"></i> Municipios</button>
-                            <!-- Botón para las 10 regiones de Veracruz -->
+                            <!-- BotÃ³n para las 10 regiones de Veracruz -->
                             <button id="btn-regiones-ver" onclick="showVeracruzRegions()" class="scale-btn w-full text-left px-3 py-1.5 text-[10px] hover:bg-white/10 rounded-md transition-all"><i class="fas fa-draw-polygon mr-1 text-white/50"></i> 10 Regiones de Veracruz</button>
                             
                             <div class="border-t border-white/10 my-1"></div>
@@ -201,7 +201,7 @@
 
                     <div class="border-t border-white/10 my-4"></div>
 
-                    <h2 class="font-semibold mb-2 text-sm">Análisis Temático</h2>
+                    <h2 class="font-semibold mb-2 text-sm">AnÃ¡lisis TemÃ¡tico</h2>
                     <div class="bg-black/20 rounded-lg p-2 border border-white/5 space-y-3">
                         <label class="flex items-center justify-between text-[11px] cursor-pointer hover:bg-white/5 p-1 rounded transition-colors">
                             <div class="flex items-center gap-2" title="Crecimiento Poblacional 2000-2020">
@@ -214,9 +214,9 @@
                             </div>
                         </label>
                         <label class="flex items-center justify-between text-[11px] cursor-pointer hover:bg-white/5 p-1 rounded transition-colors">
-                            <div class="flex items-center gap-2" title="Capas dinámicas de marginación por nivel">
+                            <div class="flex items-center gap-2" title="Capas dinÃ¡micas de marginaciÃ³n por nivel">
                                 <i class="fas fa-exclamation-circle text-orange-400"></i>
-                                <span>Índice de Marginación 2020</span>
+                                <span>Ãndice de MarginaciÃ³n 2020</span>
                             </div>
                             <div class="relative">
                                 <input type="checkbox" id="chk-marginacion" class="sr-only peer" onchange="toggleMarginacion()">
@@ -236,7 +236,7 @@
                         </ul>
                         <button id="clear-search" onclick="clearMunicipioFilter()"
                             style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: rgba(239,68,68,0.8); color: white; border: none; border-radius: 4px; padding: 4px 8px; font-size: 11px; cursor: pointer; display: none;"
-                            title="Limpiar búsqueda">✕</button>
+                            title="Limpiar bÃºsqueda">âœ•</button>
                     </div>
 
                     <div class="border-t border-white/10 my-4"></div>
@@ -245,16 +245,16 @@
                     <div id="map-legend" class="text-xs"></div>
                 </div>
 
-                <!-- ══════════ SECCIÓN INFO MUNICIPIO (Dinámica) ══════════ -->
+                <!-- â•â•â•â•â•â•â•â•â•â• SECCIÃ“N INFO MUNICIPIO (DinÃ¡mica) â•â•â•â•â•â•â•â•â•â• -->
                 <div id="info-panel" class="glass-panel hidden">
                     <h2 id="info-title" class="font-semibold mb-2"></h2>
                     <div id="info-content" class="text-xs text-white/90"></div>
                 </div>
 
-                <!-- ══════════ SECCIÓN 2: PUNTOS DE INTERÉS ══════════ -->
+                <!-- â•â•â•â•â•â•â•â•â•â• SECCIÃ“N 2: PUNTOS DE INTERÃ‰S â•â•â•â•â•â•â•â•â•â• -->
                 <div class="glass-panel">
                     <p class="text-[9px] uppercase tracking-widest text-[#F6C453] font-black opacity-70 mb-3">
-                        <i class="fas fa-map-pin mr-1"></i> Puntos de Interés
+                        <i class="fas fa-map-pin mr-1"></i> Puntos de InterÃ©s
                     </p>
 
                     <div class="relative mb-3">
@@ -266,9 +266,9 @@
 
                     <div class="category-filters space-y-1 mb-4">
                         <label class="text-[9px] uppercase tracking-wider text-white/50 font-bold">Filtrar por
-                            Categoría</label>
+                            CategorÃ­a</label>
                         <div id="category-checkboxes" class="grid grid-cols-1 gap-1">
-                            <!-- Se genera dinámicamente -->
+                            <!-- Se genera dinÃ¡micamente -->
                         </div>
                     </div>
 
@@ -286,10 +286,10 @@
                     </button>
                 </div>
 
-                <!-- ══════════ SECCIÓN 3: ANÁLISIS ESPACIAL ══════════ -->
+                <!-- â•â•â•â•â•â•â•â•â•â• SECCIÃ“N 3: ANÃLISIS ESPACIAL â•â•â•â•â•â•â•â•â•â• -->
                 <div class="glass-panel">
                     <p class="text-[9px] uppercase tracking-widest text-[#F6C453] font-black opacity-70 mb-3">
-                        <i class="fas fa-microscope mr-1"></i> Análisis Espacial
+                        <i class="fas fa-microscope mr-1"></i> AnÃ¡lisis Espacial
                     </p>
                     <div class="grid grid-cols-2 gap-2">
                         <button onclick="analysis.toggleHeatmap()" id="btn-heatmap"
@@ -310,12 +310,12 @@
                         <button onclick="analysis.startMeasureArea()" id="btn-measure-area"
                             class="text-[10px] bg-white/10 hover:bg-white/20 p-2 rounded-lg flex flex-col items-center gap-1 transition-all border border-white/10">
                             <i class="fas fa-draw-polygon text-green-400"></i>
-                            <span>Área</span>
+                            <span>Ãrea</span>
                         </button>
                         <button onclick="analysis.startPointInPolygon()" id="btn-pip"
                             class="text-[10px] bg-white/10 hover:bg-white/20 p-2 rounded-lg flex flex-col items-center gap-1 transition-all border border-white/10 col-span-2">
                             <i class="fas fa-bullseye text-[#F6C453]"></i>
-                            <span>Puntos en Polígono</span>
+                            <span>Puntos en PolÃ­gono</span>
                         </button>
                         <button onclick="analysis.startRouting()" id="btn-routing"
                             class="text-[10px] bg-white/10 hover:bg-white/20 p-2 rounded-lg flex flex-col items-center gap-1 transition-all border border-white/10 col-span-2">
@@ -325,17 +325,17 @@
                         <button onclick="analysis.clearAnalysis()"
                             class="text-[10px] bg-red-500/20 hover:bg-red-500/40 p-2 rounded-lg flex flex-col items-center gap-1 transition-all border border-red-500/30 col-span-2 mt-1">
                             <i class="fas fa-trash-can"></i>
-                            <span>Limpiar Análisis</span>
+                            <span>Limpiar AnÃ¡lisis</span>
                         </button>
                     </div>
                 </div>
 
 
 
-                <!-- ══════════ SECCIÓN 5: GESTIÓN Y DOCS ══════════ -->
+                <!-- â•â•â•â•â•â•â•â•â•â• SECCIÃ“N 5: GESTIÃ“N Y DOCS â•â•â•â•â•â•â•â•â•â• -->
                 <div class="glass-panel">
                     <p class="text-[9px] uppercase tracking-widest text-[#F6C453] font-black opacity-70 mb-3">
-                        <i class="fas fa-cog mr-1"></i> Gestión y Documentación
+                        <i class="fas fa-cog mr-1"></i> GestiÃ³n y DocumentaciÃ³n
                     </p>
 
                     <button id="admin-panel-btn"
@@ -360,7 +360,7 @@
                                 class="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center group-hover:bg-white/20">
                                 <i class="fas fa-circle-info"></i>
                             </div>
-                            <span class="text-xs font-bold">Metadatos Técnicos</span>
+                            <span class="text-xs font-bold">Metadatos TÃ©cnicos</span>
                         </button>
                     </div>
                 </div>
@@ -382,7 +382,7 @@
 
     <!-- Panel lateral para marcar puntos personalizados -->
     <div id="point-marker-panel">
-        <button class="close-panel-btn" onclick="closeMarkerPanel()">✕</button>
+        <button class="close-panel-btn" onclick="closeMarkerPanel()">âœ•</button>
 
         <h2>
             <i class="fas fa-map-pin"></i>
@@ -394,38 +394,38 @@
                 <label for="point-name">
                     <i class="fas fa-tag"></i> Nombre del Punto *
                 </label>
-                <input type="text" id="point-name" placeholder="Ej: Oficina Central, Punto de Interés..." required />
+                <input type="text" id="point-name" placeholder="Ej: Oficina Central, Punto de InterÃ©s..." required />
             </div>
 
             <div class="form-group">
                 <label for="point-category">
-                    <i class="fas fa-folder"></i> Categoría *
+                    <i class="fas fa-folder"></i> CategorÃ­a *
                 </label>
                 <select id="point-category" required onchange="updateSubcategories()">
-                    <option value="">Selecciona una categoría</option>
-                    <option value="comercio">🏪 Comercio</option>
-                    <option value="oficina">🏢 Oficina</option>
-                    <option value="educacion">🎓 Educación</option>
-                    <option value="salud">🏥 Salud</option>
-                    <option value="recreacion">🎯 Recreación</option>
-                    <option value="transporte">🚌 Transporte</option>
-                    <option value="gobierno">🏛️ Gobierno</option>
-                    <option value="otro">📍 Otro</option>
+                    <option value="">Selecciona una categorÃ­a</option>
+                    <option value="comercio">ðŸª Comercio</option>
+                    <option value="oficina">ðŸ¢ Oficina</option>
+                    <option value="educacion">ðŸŽ“ EducaciÃ³n</option>
+                    <option value="salud">ðŸ¥ Salud</option>
+                    <option value="recreacion">ðŸŽ¯ RecreaciÃ³n</option>
+                    <option value="transporte">ðŸšŒ Transporte</option>
+                    <option value="gobierno">ðŸ›ï¸ Gobierno</option>
+                    <option value="otro">ðŸ“ Otro</option>
                 </select>
             </div>
 
             <div class="form-group" id="subcategory-group">
                 <label for="point-subcategory">
-                    <i class="fas fa-sitemap"></i> Subcategoría *
+                    <i class="fas fa-sitemap"></i> SubcategorÃ­a *
                 </label>
                 <select id="point-subcategory" required disabled>
-                    <option value="">Primero selecciona una categoría</option>
+                    <option value="">Primero selecciona una categorÃ­a</option>
                 </select>
             </div>
 
             <div class="form-group">
                 <label for="point-description">
-                    <i class="fas fa-align-left"></i> Descripción (máx 500 car.)
+                    <i class="fas fa-align-left"></i> DescripciÃ³n (mÃ¡x 500 car.)
                 </label>
                 <textarea id="point-description" maxlength="500"
                     placeholder="Describe brevemente este lugar..."></textarea>
@@ -450,14 +450,14 @@
 
             <div class="form-group">
                 <label for="point-address">
-                    <i class="fas fa-map-marker-alt"></i> Dirección
+                    <i class="fas fa-map-marker-alt"></i> DirecciÃ³n
                 </label>
-                <input type="text" id="point-address" placeholder="Calle, número, colonia..." />
+                <input type="text" id="point-address" placeholder="Calle, nÃºmero, colonia..." />
             </div>
 
             <div class="form-group">
                 <label>
-                    <i class="fas fa-crosshairs"></i> Coordenadas (Geográficas y UTM)
+                    <i class="fas fa-crosshairs"></i> Coordenadas (GeogrÃ¡ficas y UTM)
                 </label>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 8px;">
                     <div>
@@ -506,7 +506,7 @@
             </h3>
             <div id="saved-points-list" class="saved-points-list">
                 <p style="text-align: center; color: rgba(255, 255, 255, 0.5); font-size: 13px;">
-                    No hay puntos guardados aún
+                    No hay puntos guardados aÃºn
                 </p>
             </div>
         </div>
@@ -517,7 +517,7 @@
     <!-- Modal de Login / Registro -->
     <div id="login-modal">
         <div class="login-card">
-            <!-- Botón de cierre X superior -->
+            <!-- BotÃ³n de cierre X superior -->
             <button onclick="closeLoginModal()" class="login-close-x" title="Cerrar">
                 <i class="fas fa-times"></i>
             </button>
@@ -526,12 +526,12 @@
             <div class="flex border-b border-white/10 overflow-hidden shrink-0">
                 <button onclick="setAuthMode('login')" id="tab-login"
                     class="flex-1 py-4 font-bold text-[#F6C453] border-b-2 border-[#F6C453] bg-white/5 transition-all">INICIAR
-                    SESIÓN</button>
+                    SESIÃ“N</button>
                 <button onclick="setAuthMode('register')" id="tab-register"
                     class="flex-1 py-4 font-bold text-white/40 border-b-2 border-transparent hover:text-white transition-all">REGISTRARSE</button>
             </div>
 
-            <!-- Área con Scroll -->
+            <!-- Ãrea con Scroll -->
             <div class="login-scroll-area text-center pt-8">
                 <h2 id="auth-title" class="text-2xl font-black text-white mb-8 uppercase tracking-wider">Acceso
                     Administrativo</h2>
@@ -545,7 +545,7 @@
                         </div>
                         <div class="relative">
                             <i class="fas fa-envelope absolute left-3 top-1/2 -translate-y-1/2 text-[#F6C453]/60"></i>
-                            <input type="email" id="reg-email" placeholder="Correo electrónico"
+                            <input type="email" id="reg-email" placeholder="Correo electrÃ³nico"
                                 class="login-input pl-10" style="margin-bottom:0">
                         </div>
                         <div class="relative">
@@ -564,7 +564,7 @@
                     </div>
                     <div class="relative">
                         <i class="fas fa-lock absolute left-3 top-1/2 -translate-y-1/2 text-[#F6C453]/60"></i>
-                        <input type="password" id="auth-pass" placeholder="Contraseña" class="login-input pl-10"
+                        <input type="password" id="auth-pass" placeholder="ContraseÃ±a" class="login-input pl-10"
                             required autocomplete="current-password" style="margin-bottom:0">
                     </div>
 
@@ -589,31 +589,31 @@
                 </div>
 
                 <p class="mt-8 text-[10px] text-white/30">
-                    © 2026 Universidad Veracruzana - SIG Web
+                    Â© 2026 Universidad Veracruzana - SIG Web
                 </p>
             </div>
         </div>
     </div>
 
-    <!-- Panel de Administración (Tabla Gestión) -->
+    <!-- Panel de AdministraciÃ³n (Tabla GestiÃ³n) -->
     <div id="admin-modal"
         class="fixed inset-0 bg-black/80 backdrop-blur-md z-[1000] hidden flex items-center justify-center p-4">
         <div
             class="bg-[#1e3c72] w-full max-w-5xl rounded-3xl overflow-hidden shadow-2xl border border-white/20 flex flex-col max-h-[90vh]">
             <div class="p-6 bg-gradient-to-r from-[#1e3c72] to-[#006847] flex justify-between items-center">
                 <div>
-                    <h2 class="text-2xl font-black text-[#F6C453] uppercase tracking-tighter">Panel de Gestión
+                    <h2 class="text-2xl font-black text-[#F6C453] uppercase tracking-tighter">Panel de GestiÃ³n
                         SIG</h2>
                     <p class="text-xs text-white/60">Administra todos los puntos personalizados en la base de
                         datos</p>
                 </div>
-                <button onclick="closeAdminTable()" class="text-white/60 hover:text-white text-3xl">✕</button>
+                <button onclick="closeAdminTable()" class="text-white/60 hover:text-white text-3xl">âœ•</button>
             </div>
 
             <div class="p-4 bg-white/5 border-b border-white/10 flex gap-4 items-center">
                 <div class="relative flex-1">
                     <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-white/40"></i>
-                    <input type="text" id="admin-search" placeholder="Filtrar por nombre, categoría o descripción..."
+                    <input type="text" id="admin-search" placeholder="Filtrar por nombre, categorÃ­a o descripciÃ³n..."
                         class="w-full bg-white/10 border border-white/20 rounded-xl pl-10 pr-4 py-2 text-white outline-none focus:ring-2 focus:ring-[#F6C453]"
                         oninput="filterAdminTable()">
                 </div>
@@ -628,13 +628,13 @@
                         <tr>
                             <th class="p-4 font-bold text-[#F6C453] uppercase text-[10px]">ID</th>
                             <th class="p-4 font-bold text-[#F6C453] uppercase text-[10px]">Punto</th>
-                            <th class="p-4 font-bold text-[#F6C453] uppercase text-[10px]">Categoría</th>
-                            <th class="p-4 font-bold text-[#F6C453] uppercase text-[10px]">Ubicación</th>
+                            <th class="p-4 font-bold text-[#F6C453] uppercase text-[10px]">CategorÃ­a</th>
+                            <th class="p-4 font-bold text-[#F6C453] uppercase text-[10px]">UbicaciÃ³n</th>
                             <th class="p-4 font-bold text-[#F6C453] uppercase text-[10px]">Acciones</th>
                         </tr>
                     </thead>
                     <tbody id="admin-table-body" class="divide-y divide-white/5">
-                        <!-- Se llena dinámicamente -->
+                        <!-- Se llena dinÃ¡micamente -->
                     </tbody>
                 </table>
             </div>
@@ -648,7 +648,7 @@
         </div>
     </div>
 
-    <!-- Modal de Gestión de Capas -->
+    <!-- Modal de GestiÃ³n de Capas -->
     <div id="modal-layers"
         class="fixed inset-0 bg-black/80 backdrop-blur-md z-[1000] hidden flex items-center justify-center p-4">
         <div
@@ -658,7 +658,7 @@
                     <h2 class="text-2xl font-black text-[#F6C453] uppercase tracking-tighter">Capas Especiales</h2>
                     <p class="text-xs text-white/60">Sube y gestiona archivos SHP, CSV o GeoJSON</p>
                 </div>
-                <button onclick="ui.closeLayersModal()" class="text-white/60 hover:text-white text-3xl">✕</button>
+                <button onclick="ui.closeLayersModal()" class="text-white/60 hover:text-white text-3xl">âœ•</button>
             </div>
 
             <div class="p-6 overflow-auto">
@@ -676,7 +676,7 @@
                                     Archivo</span>
                             </button>
                         </div>
-                        <textarea id="layer-desc" placeholder="Descripción opcional..."
+                        <textarea id="layer-desc" placeholder="DescripciÃ³n opcional..."
                             class="login-input h-20"></textarea>
                         <button type="submit" class="login-submit !py-2">GUARDAR CAPA EN LA NUBE</button>
                     </form>
@@ -691,9 +691,9 @@
     </div>
 
     <!-- Modal de Manual de Usuario -->
-    <!-- ════════════════════════════════════════════════════════ -->
-    <!--  MODAL — MANUAL DE USUARIO                              -->
-    <!-- ════════════════════════════════════════════════════════ -->
+    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+    <!--  MODAL â€” MANUAL DE USUARIO                              -->
+    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <div id="modal-manual"
         class="fixed inset-0 bg-black/80 backdrop-blur-lg z-[1100] hidden flex items-center justify-center p-4">
         <div
@@ -711,50 +711,50 @@
                         <i class="fas fa-book-open text-[#F6C453] text-2xl"></i>
                     </div>
                     <div>
-                        <h2 class="text-2xl font-black text-white tracking-tight">Guía del Geoportal</h2>
-                        <p class="text-xs text-[#F6C453]/80 font-semibold mt-0.5">Manual de Usuario · Universidad Veracruzana · Licenciatura en Geografía</p>
+                        <h2 class="text-2xl font-black text-white tracking-tight">GuÃ­a del Geoportal</h2>
+                        <p class="text-xs text-[#F6C453]/80 font-semibold mt-0.5">Manual de Usuario Â· Universidad Veracruzana Â· Licenciatura en GeografÃ­a</p>
                     </div>
                 </div>
                 <button onclick="ui.closeManualModal()"
-                    class="relative z-10 w-10 h-10 rounded-xl bg-white/10 hover:bg-red-500/60 text-white text-xl flex items-center justify-center transition-all">✕</button>
+                    class="relative z-10 w-10 h-10 rounded-xl bg-white/10 hover:bg-red-500/60 text-white text-xl flex items-center justify-center transition-all">âœ•</button>
             </div>
 
             <!-- Intro banner -->
             <div class="bg-[#F6C453]/10 border-b border-[#F6C453]/20 px-7 py-3 flex items-center gap-3">
                 <i class="fas fa-circle-info text-[#F6C453] text-sm"></i>
-                <p class="text-xs text-white/80">Este Geoportal permite visualizar, analizar y colaborar con información
-                    geográfica de los estados de <strong class="text-[#F6C453]">Veracruz y Chiapas, México</strong>, a diferentes
-                    escalas territoriales usando datos oficiales de <strong class="text-[#F6C453]">INEGI 2020</strong> y capas temáticas.
+                <p class="text-xs text-white/80">Este Geoportal permite visualizar, analizar y colaborar con informaciÃ³n
+                    geogrÃ¡fica de los estados de <strong class="text-[#F6C453]">Veracruz y Chiapas, MÃ©xico</strong>, a diferentes
+                    escalas territoriales usando datos oficiales de <strong class="text-[#F6C453]">INEGI 2020</strong> y capas temÃ¡ticas.
                 </p>
             </div>
 
             <!-- Contenido scrollable -->
             <div class="p-7 overflow-y-auto space-y-6 text-white/90 leading-relaxed">
 
-                <!-- SECCIÓN: Escalas del Mapa -->
+                <!-- SECCIÃ“N: Escalas del Mapa -->
                 <section class="rounded-2xl overflow-hidden border border-white/10">
                     <div class="bg-gradient-to-r from-blue-800/60 to-blue-900/40 px-5 py-3 flex items-center gap-3">
                         <div class="w-8 h-8 rounded-lg bg-blue-500/30 flex items-center justify-center">
                             <i class="fas fa-layer-group text-blue-300 text-sm"></i>
                         </div>
-                        <h3 class="font-black text-white text-sm uppercase tracking-wider">1. Escalas de Visualización
+                        <h3 class="font-black text-white text-sm uppercase tracking-wider">1. Escalas de VisualizaciÃ³n
                         </h3>
                     </div>
                     <div class="bg-black/20 p-5 grid grid-cols-2 md:grid-cols-3 gap-3 text-xs">
                         <div class="bg-white/5 border border-white/10 rounded-xl p-3 text-center">
                             <i class="fas fa-globe-americas text-blue-300 text-lg mb-2"></i>
                             <p class="font-bold text-white">Nacional</p>
-                            <p class="opacity-60 mt-1">Polígono de México completo con estadísticas generales de población.</p>
+                            <p class="opacity-60 mt-1">PolÃ­gono de MÃ©xico completo con estadÃ­sticas generales de poblaciÃ³n.</p>
                         </div>
                         <div class="bg-white/5 border border-white/10 rounded-xl p-3 text-center">
                             <i class="fas fa-umbrella-beach text-green-300 text-lg mb-2"></i>
                             <p class="font-bold text-white">Veracruz</p>
-                            <p class="opacity-60 mt-1">Límite estatal, municipios y 10 regiones geográficas.</p>
+                            <p class="opacity-60 mt-1">LÃ­mite estatal, municipios y 10 regiones geogrÃ¡ficas.</p>
                         </div>
                         <div class="bg-white/5 border border-white/10 rounded-xl p-3 text-center">
                             <i class="fas fa-mountain text-orange-300 text-lg mb-2"></i>
                             <p class="font-bold text-white">Chiapas</p>
-                            <p class="opacity-60 mt-1">Límite estatal, municipios, 16 regiones y municipios olvidados.</p>
+                            <p class="opacity-60 mt-1">LÃ­mite estatal, municipios, 16 regiones y municipios olvidados.</p>
                         </div>
                         <div class="bg-white/5 border border-[#F6C453]/30 rounded-xl p-3 text-center">
                             <i class="fas fa-university text-[#F6C453] text-lg mb-2"></i>
@@ -763,46 +763,46 @@
                         </div>
                         <div class="bg-white/5 border border-white/10 rounded-xl p-3 text-center">
                             <i class="fas fa-chart-line text-blue-300 text-lg mb-2"></i>
-                            <p class="font-bold text-white">Análisis Temático</p>
-                            <p class="opacity-60 mt-1">Capas superpuestas de Marginación y Crecimiento Poblacional 2010-2020.</p>
+                            <p class="font-bold text-white">AnÃ¡lisis TemÃ¡tico</p>
+                            <p class="opacity-60 mt-1">Capas superpuestas de MarginaciÃ³n y Crecimiento Poblacional 2010-2020.</p>
                         </div>
                     </div>
                 </section>
 
-                <!-- SECCIÓN: Demografía y Gráficas -->
+                <!-- SECCIÃ“N: DemografÃ­a y GrÃ¡ficas -->
                 <section class="rounded-2xl overflow-hidden border border-white/10">
                     <div class="bg-gradient-to-r from-purple-800/60 to-purple-900/40 px-5 py-3 flex items-center gap-3">
                         <div class="w-8 h-8 rounded-lg bg-purple-500/30 flex items-center justify-center">
                             <i class="fas fa-chart-pie text-purple-300 text-sm"></i>
                         </div>
-                        <h3 class="font-black text-white text-sm uppercase tracking-wider">2. Análisis Demográfico</h3>
+                        <h3 class="font-black text-white text-sm uppercase tracking-wider">2. AnÃ¡lisis DemogrÃ¡fico</h3>
                     </div>
                     <div class="bg-black/20 p-5 text-xs space-y-3">
                         <p class="text-white/80">Al hacer clic sobre un <strong class="text-white">municipio</strong> en
-                            la vista de Municipios, el sistema muestra automáticamente:</p>
+                            la vista de Municipios, el sistema muestra automÃ¡ticamente:</p>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                             <div class="bg-white/5 rounded-xl p-3 flex gap-3 items-start border border-white/10">
                                 <i class="fas fa-users text-blue-300 mt-0.5"></i>
-                                <div><strong>Población Total</strong><br><span class="opacity-60">Datos del Censo INEGI
+                                <div><strong>PoblaciÃ³n Total</strong><br><span class="opacity-60">Datos del Censo INEGI
                                         2020</span></div>
                             </div>
                             <div class="bg-white/5 rounded-xl p-3 flex gap-3 items-start border border-white/10">
                                 <i class="fas fa-chart-donut text-pink-300 mt-0.5"></i>
-                                <div><strong>Gráfica Hombres/Mujeres</strong><br><span class="opacity-60">Visualización
-                                        de la distribución porcentual por género</span></div>
+                                <div><strong>GrÃ¡fica Hombres/Mujeres</strong><br><span class="opacity-60">VisualizaciÃ³n
+                                        de la distribuciÃ³n porcentual por gÃ©nero</span></div>
                             </div>
                             <div class="bg-white/5 rounded-xl p-3 flex gap-3 items-start border border-white/10">
                                 <i class="fas fa-sidebar text-[#F6C453] mt-0.5"></i>
-                                <div><strong>Panel Lateral</strong><br><span class="opacity-60">Estadísticas y gráfica
+                                <div><strong>Panel Lateral</strong><br><span class="opacity-60">EstadÃ­sticas y grÃ¡fica
                                         ampliada en el sidebar</span></div>
                             </div>
                         </div>
-                        <p class="opacity-60 italic text-[10px]">Los datos de población se normalizan automáticamente
-                            para compensar diferencias de acentos o mayúsculas entre fuentes.</p>
+                        <p class="opacity-60 italic text-[10px]">Los datos de poblaciÃ³n se normalizan automÃ¡ticamente
+                            para compensar diferencias de acentos o mayÃºsculas entre fuentes.</p>
                     </div>
                 </section>
 
-                <!-- SECCIÓN: Puntos Personalizados VGI -->
+                <!-- SECCIÃ“N: Puntos Personalizados VGI -->
                 <section class="rounded-2xl overflow-hidden border border-white/10">
                     <div class="bg-gradient-to-r from-green-800/60 to-green-900/40 px-5 py-3 flex items-center gap-3">
                         <div class="w-8 h-8 rounded-lg bg-green-500/30 flex items-center justify-center">
@@ -812,38 +812,38 @@
                         </h3>
                     </div>
                     <div class="bg-black/20 p-5 text-xs space-y-4">
-                        <p class="text-white/80">El sistema soporta <strong class="text-white">Información Geográfica
+                        <p class="text-white/80">El sistema soporta <strong class="text-white">InformaciÃ³n GeogrÃ¡fica
                                 Voluntaria (VGI)</strong>: los usuarios registrados pueden agregar, editar y visualizar
-                            puntos de interés geolocalizados.</p>
+                            puntos de interÃ©s geolocalizados.</p>
                         <div class="space-y-2">
                             <div class="flex gap-3 items-start">
                                 <span
                                     class="bg-[#F6C453] text-[#1a2a6c] rounded-full w-5 h-5 flex items-center justify-center font-black text-[10px] flex-shrink-0 mt-0.5">1</span>
-                                <span>Inicia sesión → Activa <strong>"Marcar Punto Nuevo"</strong> en el sidebar.</span>
+                                <span>Inicia sesiÃ³n â†’ Activa <strong>"Marcar Punto Nuevo"</strong> en el sidebar.</span>
                             </div>
                             <div class="flex gap-3 items-start">
                                 <span
                                     class="bg-[#F6C453] text-[#1a2a6c] rounded-full w-5 h-5 flex items-center justify-center font-black text-[10px] flex-shrink-0 mt-0.5">2</span>
-                                <span>Haz clic en el mapa donde quieras situar el punto. El cursor cambiará a
+                                <span>Haz clic en el mapa donde quieras situar el punto. El cursor cambiarÃ¡ a
                                     <strong>+</strong>.</span>
                             </div>
                             <div class="flex gap-3 items-start">
                                 <span
                                     class="bg-[#F6C453] text-[#1a2a6c] rounded-full w-5 h-5 flex items-center justify-center font-black text-[10px] flex-shrink-0 mt-0.5">3</span>
-                                <span>Llena el formulario (nombre, categoría, descripción, foto) y guarda.</span>
+                                <span>Llena el formulario (nombre, categorÃ­a, descripciÃ³n, foto) y guarda.</span>
                             </div>
                             <div class="flex gap-3 items-start">
                                 <span
                                     class="bg-[#F6C453] text-[#1a2a6c] rounded-full w-5 h-5 flex items-center justify-center font-black text-[10px] flex-shrink-0 mt-0.5">4</span>
-                                <span>El punto mostrará su <strong>Ficha Técnica</strong> (incluyendo fotos, dirección y
+                                <span>El punto mostrarÃ¡ su <strong>Ficha TÃ©cnica</strong> (incluyendo fotos, direcciÃ³n y
                                     <strong>coordenadas Lat/Lng</strong> precisas). Los usuarios pueden interactuar con
                                     Likes y comentarios.</span>
                             </div>
                             <div class="flex gap-3 items-start bg-blue-500/10 p-2 rounded-lg border border-blue-500/20">
                                 <i class="fas fa-mouse-pointer text-blue-300 mt-0.5"></i>
                                 <p class="text-[10px]"><strong class="text-blue-300">Captura Inteligente:</strong> Al
-                                    usar herramientas de análisis, puedes hacer clic directamente sobre un icono para
-                                    capturar su ubicación exacta sin interferencias.</p>
+                                    usar herramientas de anÃ¡lisis, puedes hacer clic directamente sobre un icono para
+                                    capturar su ubicaciÃ³n exacta sin interferencias.</p>
                             </div>
                         </div>
                         <div class="grid grid-cols-4 gap-2 pt-2">
@@ -853,7 +853,7 @@
                             </div>
                             <div class="bg-white/5 rounded-lg p-2 text-center border border-white/10"><i
                                     class="fas fa-graduation-cap text-purple-300"></i>
-                                <p class="mt-1 opacity-70">Educación</p>
+                                <p class="mt-1 opacity-70">EducaciÃ³n</p>
                             </div>
                             <div class="bg-white/5 rounded-lg p-2 text-center border border-white/10"><i
                                     class="fas fa-heart-pulse text-red-300"></i>
@@ -861,63 +861,63 @@
                             </div>
                             <div class="bg-white/5 rounded-lg p-2 text-center border border-white/10"><i
                                     class="fas fa-ellipsis text-gray-300"></i>
-                                <p class="mt-1 opacity-70">+5 más</p>
+                                <p class="mt-1 opacity-70">+5 mÃ¡s</p>
                             </div>
                         </div>
                     </div>
                 </section>
 
-                <!-- SECCIÓN: Herramientas de Análisis -->
+                <!-- SECCIÃ“N: Herramientas de AnÃ¡lisis -->
                 <section class="rounded-2xl overflow-hidden border border-white/10">
                     <div class="bg-gradient-to-r from-orange-800/60 to-orange-900/40 px-5 py-3 flex items-center gap-3">
                         <div class="w-8 h-8 rounded-lg bg-orange-500/30 flex items-center justify-center">
                             <i class="fas fa-microscope text-orange-300 text-sm"></i>
                         </div>
-                        <h3 class="font-black text-white text-sm uppercase tracking-wider">4. Herramientas de Análisis
+                        <h3 class="font-black text-white text-sm uppercase tracking-wider">4. Herramientas de AnÃ¡lisis
                             Espacial</h3>
                     </div>
                     <div class="bg-black/20 p-5 grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
                         <div class="flex gap-3 items-start bg-white/5 rounded-xl p-3 border border-white/10">
                             <i class="fas fa-fire text-orange-400 mt-0.5 w-4"></i>
                             <div><strong class="text-white">Mapa de Calor</strong><br><span class="opacity-60">Visualiza
-                                    la densidad de concentración de los puntos personalizados mediante
-                                    interpolación.</span></div>
+                                    la densidad de concentraciÃ³n de los puntos personalizados mediante
+                                    interpolaciÃ³n.</span></div>
                         </div>
                         <div class="flex gap-3 items-start bg-white/5 rounded-xl p-3 border border-white/10">
                             <i class="fas fa-circle-notch text-blue-400 mt-0.5 w-4"></i>
-                            <div><strong class="text-white">Buffer (Área de Influencia)</strong><br><span
-                                    class="opacity-60">Genera un radio de cobertura alrededor de un punto para análisis
+                            <div><strong class="text-white">Buffer (Ãrea de Influencia)</strong><br><span
+                                    class="opacity-60">Genera un radio de cobertura alrededor de un punto para anÃ¡lisis
                                     de proximidad.</span></div>
                         </div>
                         <div class="flex gap-3 items-start bg-white/5 rounded-xl p-3 border border-white/10">
                             <i class="fas fa-ruler text-white mt-0.5 w-4"></i>
-                            <div><strong class="text-white">Medición de Distancias</strong><br><span
+                            <div><strong class="text-white">MediciÃ³n de Distancias</strong><br><span
                                     class="opacity-60">Haz clic en dos puntos del mapa para obtener la distancia
-                                    geodésica en kilómetros.</span></div>
+                                    geodÃ©sica en kilÃ³metros.</span></div>
                         </div>
                         <div class="flex gap-3 items-start bg-white/5 rounded-xl p-3 border border-white/10">
                             <i class="fas fa-draw-polygon text-green-400 mt-0.5 w-4"></i>
-                            <div><strong class="text-white">Medición de Área</strong><br><span class="opacity-60">Dibuja
-                                    un polígono con múltiples clics y doble clic para cerrarlo. Calcula el área en
-                                    km².</span></div>
+                            <div><strong class="text-white">MediciÃ³n de Ãrea</strong><br><span class="opacity-60">Dibuja
+                                    un polÃ­gono con mÃºltiples clics y doble clic para cerrarlo. Calcula el Ã¡rea en
+                                    kmÂ².</span></div>
                         </div>
                         <div class="flex gap-3 items-start bg-white/5 rounded-xl p-3 border border-white/10">
                             <i class="fas fa-bullseye text-pink-400 mt-0.5 w-4"></i>
                             <div><strong class="text-white">Conteo de Puntos (PiP)</strong><br><span
-                                    class="opacity-60">Calcula cuántos puntos personalizados hay dentro de un
+                                    class="opacity-60">Calcula cuÃ¡ntos puntos personalizados hay dentro de un
                                     municipio.</span></div>
                         </div>
                         <div class="flex gap-3 items-start bg-[#F6C453]/10 rounded-xl p-3 border border-[#F6C453]/30">
                             <i class="fas fa-route text-[#F6C453] mt-0.5 w-4"></i>
                             <div><strong class="text-white">Ruta Vial Inteligente</strong><br><span
-                                    class="opacity-60">Calcula trayectos por calles considerando <strong>tráfico en
+                                    class="opacity-60">Calcula trayectos por calles considerando <strong>trÃ¡fico en
                                         tiempo real (simulado)</strong> y horas pico. Muestra un resumen en tarjeta
                                     minimalista.</span></div>
                         </div>
                     </div>
                 </section>
 
-                <!-- SECCIÓN: Capas SIG y Datos -->
+                <!-- SECCIÃ“N: Capas SIG y Datos -->
                 <section class="rounded-2xl overflow-hidden border border-white/10">
                     <div class="bg-gradient-to-r from-teal-800/60 to-teal-900/40 px-5 py-3 flex items-center gap-3">
                         <div class="w-8 h-8 rounded-lg bg-teal-500/30 flex items-center justify-center">
@@ -926,7 +926,7 @@
                         <h3 class="font-black text-white text-sm uppercase tracking-wider">5. Capas SIG Especiales</h3>
                     </div>
                     <div class="bg-black/20 p-5 text-xs space-y-3">
-                        <p class="text-white/80">Los usuarios con sesión iniciada pueden subir y visualizar sus propias
+                        <p class="text-white/80">Los usuarios con sesiÃ³n iniciada pueden subir y visualizar sus propias
                             capas geoespaciales sobre el mapa base:</p>
                         <div class="grid grid-cols-3 gap-3">
                             <div class="bg-white/5 rounded-xl p-3 text-center border border-white/10">
@@ -938,12 +938,12 @@
                             <div class="bg-white/5 rounded-xl p-3 text-center border border-white/10">
                                 <i class="fas fa-file-csv text-green-300 text-xl mb-2"></i>
                                 <p class="font-bold">CSV</p>
-                                <p class="opacity-60 mt-1">Columnas lat/lng reconocidas automáticamente</p>
+                                <p class="opacity-60 mt-1">Columnas lat/lng reconocidas automÃ¡ticamente</p>
                             </div>
                             <div class="bg-white/5 rounded-xl p-3 text-center border border-white/10">
                                 <i class="fas fa-file-code text-blue-300 text-xl mb-2"></i>
                                 <p class="font-bold">GeoJSON</p>
-                                <p class="opacity-60 mt-1">Formato nativo de Leaflet, importación directa</p>
+                                <p class="opacity-60 mt-1">Formato nativo de Leaflet, importaciÃ³n directa</p>
                             </div>
                         </div>
                         <p class="opacity-50 italic text-[10px]">Las capas se almacenan de forma segura y persisten
@@ -955,18 +955,18 @@
 
             <!-- Footer -->
             <div class="p-5 bg-black/30 border-t border-white/10 flex items-center justify-between flex-wrap gap-3">
-                <p class="text-[10px] text-white/40">© 2026 Universidad Veracruzana · Licenciatura en Geografía</p>
+                <p class="text-[10px] text-white/40">Â© 2026 Universidad Veracruzana Â· Licenciatura en GeografÃ­a</p>
                 <button onclick="ui.closeManualModal()"
                     class="px-8 py-2.5 bg-[#F6C453] text-[#1a2a6c] font-black rounded-xl hover:bg-white hover:scale-105 transition-all shadow-lg text-sm">
-                    <i class="fas fa-check mr-2"></i>¡Entendido!
+                    <i class="fas fa-check mr-2"></i>Â¡Entendido!
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- ════════════════════════════════════════════════════════ -->
-    <!--  MODAL — FICHA DE METADATOS TÉCNICOS                   -->
-    <!-- ════════════════════════════════════════════════════════ -->
+    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+    <!--  MODAL â€” FICHA DE METADATOS TÃ‰CNICOS                   -->
+    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <div id="modal-metadata"
         class="fixed inset-0 bg-black/80 backdrop-blur-lg z-[1100] hidden flex items-center justify-center p-4">
         <div
@@ -984,46 +984,46 @@
                         <i class="fas fa-file-invoice text-[#F6C453] text-2xl"></i>
                     </div>
                     <div>
-                        <h2 class="text-2xl font-black text-white tracking-tight">Ficha Técnica de Metadatos</h2>
-                        <p class="text-[10px] text-[#F6C453]/80 font-black uppercase tracking-widest mt-0.5">ISO 19115 ·
-                            NMX-R-069-SCFI · SNIEG Norma Técnica</p>
+                        <h2 class="text-2xl font-black text-white tracking-tight">Ficha TÃ©cnica de Metadatos</h2>
+                        <p class="text-[10px] text-[#F6C453]/80 font-black uppercase tracking-widest mt-0.5">ISO 19115 Â·
+                            NMX-R-069-SCFI Â· SNIEG Norma TÃ©cnica</p>
                     </div>
                 </div>
                 <button onclick="ui.closeMetadataModal()"
-                    class="relative z-10 w-10 h-10 rounded-xl bg-white/10 hover:bg-red-500/60 text-white text-xl flex items-center justify-center transition-all">✕</button>
+                    class="relative z-10 w-10 h-10 rounded-xl bg-white/10 hover:bg-red-500/60 text-white text-xl flex items-center justify-center transition-all">âœ•</button>
             </div>
 
             <!-- Badge norma -->
             <div class="bg-[#F6C453]/10 border-b border-[#F6C453]/20 px-6 py-2.5 flex items-center gap-2">
                 <i class="fas fa-shield-halved text-[#F6C453] text-xs"></i>
-                <p class="text-[10px] text-[#F6C453] font-black uppercase tracking-widest">Cumple con la Norma Técnica
-                    de Metadatos Geográficos del INEGI-SNIEG</p>
+                <p class="text-[10px] text-[#F6C453] font-black uppercase tracking-widest">Cumple con la Norma TÃ©cnica
+                    de Metadatos GeogrÃ¡ficos del INEGI-SNIEG</p>
             </div>
 
             <div class="p-7 overflow-y-auto space-y-5 text-white/90">
 
-                <!-- Identificación y Alcance -->
+                <!-- IdentificaciÃ³n y Alcance -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="bg-white/5 rounded-2xl border border-white/10 overflow-hidden">
                         <div class="bg-[#F6C453]/10 px-4 py-2 border-b border-[#F6C453]/20">
                             <p
                                 class="text-[10px] uppercase font-black text-[#F6C453] tracking-widest flex items-center gap-2">
-                                <i class="fas fa-tag"></i> Identificación
+                                <i class="fas fa-tag"></i> IdentificaciÃ³n
                             </p>
                         </div>
                         <div class="p-4 space-y-2 text-xs">
-                            <div class="flex justify-between"><span class="opacity-50">Título</span><span
+                            <div class="flex justify-between"><span class="opacity-50">TÃ­tulo</span><span
                                     class="font-bold text-right">Geoportal Interactivo SIG-UV</span></div>
-                            <div class="flex justify-between"><span class="opacity-50">Versión</span><span
+                            <div class="flex justify-between"><span class="opacity-50">VersiÃ³n</span><span
                                     class="font-bold">2026.v2.0</span></div>
                             <div class="flex justify-between"><span class="opacity-50">Idioma</span><span
-                                    class="font-bold">Español (México)</span></div>
+                                    class="font-bold">EspaÃ±ol (MÃ©xico)</span></div>
                             <div class="flex justify-between"><span class="opacity-50">Cobertura</span><span
-                                    class="font-bold">Veracruz y Chiapas, México</span></div>
-                            <div class="flex justify-between"><span class="opacity-50">Escala mínima</span><span
+                                    class="font-bold">Veracruz y Chiapas, MÃ©xico</span></div>
+                            <div class="flex justify-between"><span class="opacity-50">Escala mÃ­nima</span><span
                                     class="font-bold">1:250,000</span></div>
-                            <div class="flex justify-between"><span class="opacity-50">Temática ISO</span><span
-                                    class="font-bold">001 Farming · 015 Society</span></div>
+                            <div class="flex justify-between"><span class="opacity-50">TemÃ¡tica ISO</span><span
+                                    class="font-bold">001 Farming Â· 015 Society</span></div>
                         </div>
                     </div>
 
@@ -1039,8 +1039,8 @@
                                     class="font-bold">WGS 84 / ITRF08</span></div>
                             <div class="flex justify-between"><span class="opacity-50">EPSG</span><span
                                     class="font-bold text-blue-300">EPSG:4326</span></div>
-                            <div class="flex justify-between"><span class="opacity-50">Proyección</span><span
-                                    class="font-bold">Geográfica (Lat/Lon)</span></div>
+                            <div class="flex justify-between"><span class="opacity-50">ProyecciÃ³n</span><span
+                                    class="font-bold">GeogrÃ¡fica (Lat/Lon)</span></div>
                             <div class="flex justify-between"><span class="opacity-50">Formato vectorial</span><span
                                     class="font-bold">GeoJSON</span></div>
                             <div class="flex justify-between"><span class="opacity-50">Formato alternativo</span><span
@@ -1056,7 +1056,7 @@
                     <div class="bg-orange-500/10 px-4 py-2 border-b border-orange-500/20">
                         <p
                             class="text-[10px] uppercase font-black text-orange-300 tracking-widest flex items-center gap-2">
-                            <i class="fas fa-timeline"></i> Linaje — Fuentes de Datos
+                            <i class="fas fa-timeline"></i> Linaje â€” Fuentes de Datos
                         </p>
                     </div>
                     <div class="p-4 space-y-3 text-xs">
@@ -1065,10 +1065,10 @@
                                 class="bg-[#006847] text-white px-3 py-1 rounded-lg font-black text-[10px] flex-shrink-0">
                                 INEGI</div>
                             <div>
-                                <p class="font-bold text-white">Marco Geoestadístico Nacional — INEGI</p>
-                                <p class="opacity-60 mt-0.5">Cartografía vectorial oficial que define la delimitación
-                                    política y administrativa de Veracruz y Chiapas, integrada mediante polígonos
-                                    geoestadísticos para la gestión y análisis territorial.</p>
+                                <p class="font-bold text-white">Marco GeoestadÃ­stico Nacional â€” INEGI</p>
+                                <p class="opacity-60 mt-0.5">CartografÃ­a vectorial oficial que define la delimitaciÃ³n
+                                    polÃ­tica y administrativa de Veracruz y Chiapas, integrada mediante polÃ­gonos
+                                    geoestadÃ­sticos para la gestiÃ³n y anÃ¡lisis territorial.</p>
                             </div>
                         </div>
                         <div class="border-t border-white/5"></div>
@@ -1077,9 +1077,9 @@
                                 class="bg-[#F97316] text-white px-3 py-1 rounded-lg font-black text-[10px] flex-shrink-0">
                                 CENSO</div>
                             <div>
-                                <p class="font-bold text-white">Censo de Población y Vivienda — INEGI</p>
-                                <p class="opacity-60 mt-0.5">Base de datos demográfica desagregada a nivel municipal que
-                                    incluye indicadores poblacionales, crecimiento demográfico e índices de marginación territorial.</p>
+                                <p class="font-bold text-white">Censo de PoblaciÃ³n y Vivienda â€” INEGI</p>
+                                <p class="opacity-60 mt-0.5">Base de datos demogrÃ¡fica desagregada a nivel municipal que
+                                    incluye indicadores poblacionales, crecimiento demogrÃ¡fico e Ã­ndices de marginaciÃ³n territorial.</p>
                             </div>
                         </div>
                         <div class="border-t border-white/5"></div>
@@ -1088,9 +1088,9 @@
                                 class="bg-blue-700 text-white px-3 py-1 rounded-lg font-black text-[10px] flex-shrink-0">
                                 UV</div>
                             <div>
-                                <p class="font-bold text-white">Universidad Veracruzana — Regiones y Facultades</p>
-                                <p class="opacity-60 mt-0.5">Información institucional de las 5 regiones universitarias
-                                    (Xalapa, Veracruz, Orizaba-Córdoba, Poza Rica-Tuxpan, Coatzacoalcos-Minatitlán) y
+                                <p class="font-bold text-white">Universidad Veracruzana â€” Regiones y Facultades</p>
+                                <p class="opacity-60 mt-0.5">InformaciÃ³n institucional de las 5 regiones universitarias
+                                    (Xalapa, Veracruz, Orizaba-CÃ³rdoba, Poza Rica-Tuxpan, Coatzacoalcos-MinatitlÃ¡n) y
                                     sus respectivas facultades.</p>
                             </div>
                         </div>
@@ -1100,31 +1100,31 @@
                                 class="bg-purple-700 text-white px-3 py-1 rounded-lg font-black text-[10px] flex-shrink-0">
                                 VGI</div>
                             <div>
-                                <p class="font-bold text-white">Información Geográfica Voluntaria (VGI)</p>
-                                <p class="opacity-60 mt-0.5">Repositorio dinámico de puntos de interés capturados de
+                                <p class="font-bold text-white">InformaciÃ³n GeogrÃ¡fica Voluntaria (VGI)</p>
+                                <p class="opacity-60 mt-0.5">Repositorio dinÃ¡mico de puntos de interÃ©s capturados de
                                     forma colaborativa por la comunidad universitaria, permitiendo el registro
-                                    georreferenciado de servicios, infraestructura y dinámicas sociales en tiempo real.
+                                    georreferenciado de servicios, infraestructura y dinÃ¡micas sociales en tiempo real.
                                 </p>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Stack técnico y responsable -->
+                <!-- Stack tÃ©cnico y responsable -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="bg-white/5 rounded-2xl border border-white/10 overflow-hidden">
                         <div class="bg-purple-500/10 px-4 py-2 border-b border-purple-500/20">
                             <p
                                 class="text-[10px] uppercase font-black text-purple-300 tracking-widest flex items-center gap-2">
-                                <i class="fas fa-code"></i> Tecnologías
+                                <i class="fas fa-code"></i> TecnologÃ­as
                             </p>
                         </div>
                         <div class="p-4 text-xs space-y-1.5">
-                            <div class="flex justify-between"><span class="opacity-50">Visualización</span><span
+                            <div class="flex justify-between"><span class="opacity-50">VisualizaciÃ³n</span><span
                                     class="font-bold">Leaflet.js 1.9.4</span></div>
-                            <div class="flex justify-between"><span class="opacity-50">Gráficas</span><span
+                            <div class="flex justify-between"><span class="opacity-50">GrÃ¡ficas</span><span
                                     class="font-bold">Chart.js (Doughnut)</span></div>
-                            <div class="flex justify-between"><span class="opacity-50">Análisis espacial</span><span
+                            <div class="flex justify-between"><span class="opacity-50">AnÃ¡lisis espacial</span><span
                                     class="font-bold">Turf.js</span></div>
                             <div class="flex justify-between"><span class="opacity-50">Clustering</span><span
                                     class="font-bold">MarkerCluster</span></div>
@@ -1134,7 +1134,7 @@
                                     class="font-bold">PostgreSQL/Supabase</span></div>
                             <div class="flex justify-between"><span class="opacity-50">Storage</span><span
                                     class="font-bold">Amazon S3</span></div>
-                            <div class="flex justify-between"><span class="opacity-50">Autenticación</span><span
+                            <div class="flex justify-between"><span class="opacity-50">AutenticaciÃ³n</span><span
                                     class="font-bold">JWT + Google OAuth2</span></div>
                         </div>
                     </div>
@@ -1155,18 +1155,18 @@
                                 <div>
                                     <p class="font-black text-white text-sm">Juan Daniel Viveros Viveros</p>
                                     <p class="text-[10px] opacity-60 italic">Desarrollo Web y Geoprocesamiento</p>
-                                    <p class="text-[10px] text-[#F6C453] font-bold mt-0.5">Licenciatura en Geografía —
+                                    <p class="text-[10px] text-[#F6C453] font-bold mt-0.5">Licenciatura en GeografÃ­a â€”
                                         UV</p>
                                 </div>
                             </div>
                             <div class="border-t border-white/10 pt-3 text-xs space-y-1">
-                                <div class="flex justify-between"><span class="opacity-50">Institución</span><span
+                                <div class="flex justify-between"><span class="opacity-50">InstituciÃ³n</span><span
                                         class="font-bold">Universidad Veracruzana</span></div>
                                 <div class="flex justify-between"><span class="opacity-50">Facultad</span><span
-                                        class="font-bold">Economía</span></div>
+                                        class="font-bold">EconomÃ­a</span></div>
                                 <div class="flex justify-between"><span class="opacity-50">Licenciatura</span><span
-                                        class="font-bold">Geografía</span></div>
-                                <div class="flex justify-between"><span class="opacity-50">Año</span><span
+                                        class="font-bold">GeografÃ­a</span></div>
+                                <div class="flex justify-between"><span class="opacity-50">AÃ±o</span><span
                                         class="font-bold">2026</span></div>
                             </div>
                         </div>
@@ -1179,7 +1179,7 @@
             <div class="p-5 bg-black/30 border-t border-white/10 flex items-center justify-between flex-wrap gap-3">
                 <div class="flex items-center gap-2">
                     <i class="fas fa-shield-check text-[#F6C453] text-sm"></i>
-                    <p class="text-[10px] text-white/40">Aplicación certificada bajo estándares de metadatos SNIEG · ISO
+                    <p class="text-[10px] text-white/40">AplicaciÃ³n certificada bajo estÃ¡ndares de metadatos SNIEG Â· ISO
                         19115</p>
                 </div>
                 <button onclick="ui.closeMetadataModal()"
@@ -1190,31 +1190,31 @@
         </div>
     </div>
 
-    <!-- Modal Cambio de Contraseña -->
+    <!-- Modal Cambio de ContraseÃ±a -->
     <div id="modal-password"
         class="fixed inset-0 bg-black/80 backdrop-blur-md z-[1200] hidden flex items-center justify-center p-4">
         <div class="bg-[#1e3c72] w-full max-w-md rounded-3xl overflow-hidden shadow-2xl border border-white/20">
             <div class="p-6 bg-gradient-to-r from-[#1e3c72] to-[#1a2a6c] flex justify-between items-center border-b border-white/10">
                 <h2 class="text-xl font-black text-[#F6C453] uppercase tracking-tighter">Seguridad</h2>
-                <button onclick="ui.closePasswordModal()" class="text-white/60 hover:text-white text-2xl">✕</button>
+                <button onclick="ui.closePasswordModal()" class="text-white/60 hover:text-white text-2xl">âœ•</button>
             </div>
             <div class="p-8">
-                <p class="text-xs text-white/60 mb-6 italic">Ingresa tu contraseña actual y la nueva clave que deseas usar.</p>
+                <p class="text-xs text-white/60 mb-6 italic">Ingresa tu contraseÃ±a actual y la nueva clave que deseas usar.</p>
                 <form id="form-change-password" class="space-y-5">
                     <div class="form-group mb-0">
-                        <label class="text-[10px] uppercase font-bold text-[#F6C453] tracking-widest mb-2 block">Contraseña Actual</label>
-                        <input type="password" id="old-pass" class="login-input !m-0" required placeholder="••••••••">
+                        <label class="text-[10px] uppercase font-bold text-[#F6C453] tracking-widest mb-2 block">ContraseÃ±a Actual</label>
+                        <input type="password" id="old-pass" class="login-input !m-0" required placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢">
                     </div>
                     <div class="form-group mb-0">
-                        <label class="text-[10px] uppercase font-bold text-[#F6C453] tracking-widest mb-2 block">Nueva Contraseña</label>
-                        <input type="password" id="new-pass" class="login-input !m-0" required placeholder="••••••••">
+                        <label class="text-[10px] uppercase font-bold text-[#F6C453] tracking-widest mb-2 block">Nueva ContraseÃ±a</label>
+                        <input type="password" id="new-pass" class="login-input !m-0" required placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢">
                     </div>
                     <div class="form-group mb-0">
-                        <label class="text-[10px] uppercase font-bold text-[#F6C453] tracking-widest mb-2 block">Confirmar Nueva Contraseña</label>
-                        <input type="password" id="confirm-new-pass" class="login-input !m-0" required placeholder="••••••••">
+                        <label class="text-[10px] uppercase font-bold text-[#F6C453] tracking-widest mb-2 block">Confirmar Nueva ContraseÃ±a</label>
+                        <input type="password" id="confirm-new-pass" class="login-input !m-0" required placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢">
                     </div>
                     <div class="pt-4">
-                        <button type="submit" class="login-submit">ACTUALIZAR CONTRASEÑA</button>
+                        <button type="submit" class="login-submit">ACTUALIZAR CONTRASEÃ‘A</button>
                     </div>
                 </form>
             </div>
@@ -1229,7 +1229,7 @@
         <div class="max-w-6xl mx-auto px-4">
             <!-- Universidad -->
             <p class="text-sm">
-                <strong class="text-white">© 2026 Universidad Veracruzana</strong> | Diseño y Desarrollo Web:
+                <strong class="text-white">Â© 2026 Universidad Veracruzana</strong> | DiseÃ±o y Desarrollo Web:
                 <strong>Juan Daniel Viveros Viveros</strong>
             </p>
         </div>
@@ -1248,27 +1248,27 @@
         </div>
         <div class="routing-divider"></div>
         <div class="routing-stat">
-            <span class="routing-stat-label">Tráfico</span>
+            <span class="routing-stat-label">TrÃ¡fico</span>
             <div style="display: flex; align-items: center;">
                 <div id="routing-traffic-dot" class="traffic-dot dot-green"></div>
                 <span id="routing-traffic-txt" style="font-size: 11px; font-weight: bold;">Fluido</span>
             </div>
         </div>
         <div class="routing-divider"></div>
-        <div id="close-routing-card" onclick="analysis.clearAnalysis()" title="Cerrar análisis">
+        <div id="close-routing-card" onclick="analysis.clearAnalysis()" title="Cerrar anÃ¡lisis">
             <i class="fas fa-times"></i>
         </div>
     </div>
 
     <!-- Scripts JS - Orden de dependencia -->
     <!-- ================================ -->
-    <script src="js/config.js?v=2"></script>
-    <script src="js/api.js?v=2"></script>
-    <script src="js/auth.js?v=2"></script>
-    <script src="js/ui.js?v=2"></script>
-    <script src="js/analysis.js?v=2"></script>
-    <script src="js/map.js?v=2"></script>
-    <script src="js/main.js?v=2"></script>
+    <script src="js/config.js?v=3"></script>
+    <script src="js/api.js?v=3"></script>
+    <script src="js/auth.js?v=3"></script>
+    <script src="js/ui.js?v=3"></script>
+    <script src="js/analysis.js?v=3"></script>
+    <script src="js/map.js?v=3"></script>
+    <script src="js/main.js?v=3"></script>
 
 </body>
 
