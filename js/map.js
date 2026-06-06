@@ -684,9 +684,6 @@ function showVeracruzRegions() {
         'Olmeca': { file: 'Olmeca.geojson', color: '#EC4899' }
     };
 
-    if (typeof showNotification === 'function') {
-        showNotification('Cargando las 10 regiones de Veracruz...', 'info');
-    }
 
     const promises = Object.entries(regionFiles).map(([regionName, info]) => {
         if (regionesVerGeoJSONs[regionName]) {
@@ -743,9 +740,6 @@ function showVeracruzRegions() {
         layers.regionesVer.addTo(map);
         try { map.fitBounds(layers.regionesVer.getBounds(), { padding: [30, 30] }); } catch (e) { }
 
-        if (typeof showNotification === 'function') {
-            showNotification('¡Regiones de Veracruz cargadas con éxito!', 'success');
-        }
     }).catch(err => {
         console.error("Error cargando regiones de Veracruz:", err);
         if (typeof showNotification === 'function') {
@@ -987,6 +981,62 @@ function showChiapasState() {
         }).catch(e => console.warn("Error cargando chiapas estado", e));
     }
     layers.chiapasEstado.addTo(map);
+
+    const pc = {
+        POB1: 5543828,
+        POB84: 2721010,
+        POB42: 2822818
+    };
+    abrirPanel("Información Estatal (Chiapas)", `
+        <div class="mb-4">
+            <p class="text-xs uppercase tracking-widest text-[#F6C453] mb-1 font-bold">Estatal</p>
+            <h3 class="text-lg font-bold mb-3">Estado de Chiapas</h3>
+            <div class="bg-white/10 rounded-xl p-3 mb-4 border border-white/5">
+                <p class="text-[10px] uppercase opacity-60 mb-0.5">Población Total</p>
+                <p class="text-2xl font-black text-[#F6C453]">${(pc.POB1).toLocaleString()}</p>
+            </div>
+            <ul class="text-[12px] space-y-2 mb-4">
+                <li class="flex justify-between items-center text-blue-300">
+                    <span class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-[#3B82F6]"></div> Hombres</span> 
+                    <b class="text-white">${(pc.POB84).toLocaleString()}</b>
+                </li>
+                <li class="flex justify-between items-center text-pink-300">
+                    <span class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-[#F472B6]"></div> Mujeres</span> 
+                    <b class="text-white">${(pc.POB42).toLocaleString()}</b>
+                </li>
+            </ul>
+            <div class="relative h-44 w-full">
+                <canvas id="poblacionChartChiapasEstatal"></canvas>
+            </div>
+        </div>
+    `);
+
+    if (currentChart) currentChart.destroy();
+    setTimeout(() => {
+        const ctx = document.getElementById('poblacionChartChiapasEstatal').getContext('2d');
+        currentChart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: ['Hombres', 'Mujeres'],
+                datasets: [{
+                    data: [pc.POB84, pc.POB42],
+                    backgroundColor: ['#3B82F6', '#F472B6'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { color: '#fff', font: { size: 10 } }
+                    }
+                }
+            }
+        });
+    }, 100);
+
     checkMarginacionOverlay();
     checkCrecimientoOverlay();
 }
@@ -1011,10 +1061,52 @@ function showChiapasMunicipalities() {
                 const pob = feature.properties.POB1 || 0;
                 return { fillColor: getColor(pob), weight: 1, opacity: 1, color: 'white', fillOpacity: 0.7 };
             },
-            onEachFeature: (feature, layer) => {
-                const nom = feature.properties.NOMGEO || 'Desconocido';
-                const pob = feature.properties.POB1 || 0;
-                layer.bindTooltip(`<b>${nom}</b><br>Población: <b>${pob.toLocaleString()}</b>`, { sticky: true, className: 'custom-tooltip' });
+            onEachFeature: (f, l) => {
+                const nom = f.properties.NOMGEO || 'Desconocido';
+                const pob = f.properties.POB1 || 0;
+                l.bindTooltip(`<b>${nom}</b><br>Población: <b>${pob.toLocaleString()}</b>`, { sticky: true, className: 'custom-tooltip' });
+                
+                l.on('click', (e) => {
+                    if (window.pipMode) {
+                        try {
+                            const polygon = f.geometry;
+                            let count = 0;
+                            if (typeof customPoints !== 'undefined') {
+                                customPoints.forEach(p => {
+                                    const point = turf.point([p.lng, p.lat]);
+                                    if (turf.booleanPointInPolygon(point, polygon)) count++;
+                                });
+                            }
+                            const msg = `<div style="text-align:center">
+                                <b style="color:#F6C453">ANÁLISIS ESPACIAL</b><br>
+                                Municipio: <b>${f.properties.NOMGEO}</b><br>
+                                <hr style="margin:5px 0; border:0; border-top:1px solid rgba(255,255,255,0.2)">
+                                Se encontraron <b style="font-size:14px">${count}</b> puntos personalizados dentro.
+                            </div>`;
+                            L.popup().setLatLng(e.latlng).setContent(msg).openOn(map);
+                        } catch (err) { console.error('Error PiP:', err); }
+                        return;
+                    }
+                    if (window.analysisMode) return;
+
+                    try { highlightLayer.clearLayers(); } catch (e) { }
+                    if (highlightLabel) { try { map.removeLayer(highlightLabel); } catch (e) { }; highlightLabel = null; }
+
+                    highlightLayer.addData(f);
+                    highlightLayer.eachLayer(layer => {
+                        layer.bindTooltip(f.properties.NOMGEO, {
+                            permanent: false,
+                            direction: 'center',
+                            className: 'custom-municipio-tooltip',
+                            sticky: true
+                        });
+                    });
+                    applyGlowToLayer(highlightLayer);
+
+                    if (window.ui && window.ui.mostrarInfoMunicipio) {
+                        window.ui.mostrarInfoMunicipio(f.properties.CVEGEO, f.properties.NOMGEO);
+                    }
+                });
             }
         }).addTo(layers.chiapasMunicipios);
         try { map.fitBounds(layer.getBounds(), { padding: [30, 30] }); } catch (e) { }
@@ -1034,6 +1126,27 @@ function showChiapasMunicipalities() {
             munData.features.forEach(f => {
                 f.properties.POB1 = pMap[f.properties.CVEGEO] || 0;
             });
+
+            // Inject Chiapas municipalities into poblacion.municipios for ui.mostrarInfoMunicipio integration
+            if (typeof poblacion !== 'undefined' && poblacion.municipios) {
+                margData.features.forEach(f => {
+                    const name = f.properties.NOMGEO;
+                    const pob = f.properties.POB1 || 0;
+                    const pob84 = Math.round(pob * 0.491);
+                    const pob42 = pob - pob84;
+                    const normalize = str => str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().trim();
+                    const search = normalize(name);
+                    if (!poblacion.municipios.some(x => normalize(x.NOMGEO) === search)) {
+                        poblacion.municipios.push({
+                            NOMGEO: name,
+                            POB1: pob,
+                            POB84: pob84,
+                            POB42: pob42
+                        });
+                    }
+                });
+            }
+
             chiapasMunicipiosGeoJSON = munData;
             render(munData);
         }).catch(e => console.warn("Error cargando municipios de Chiapas", e));
