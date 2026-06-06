@@ -89,8 +89,8 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "Accept"],
 )
 
 # --- CARPETA DE UPLOADS ---
@@ -198,26 +198,31 @@ def init_db():
                 )
             ''')
 
-            # Creamos el admin inicial
-            raw_admin_pass = os.environ.get("ADMIN_PASSWORD", "uv2026")
-            admin_pass = pwd_context.hash(raw_admin_pass)
-            
-            # 1. Admin general
-            cursor.execute('''
-                INSERT INTO users (username, password, full_name, email, university, role) 
-                VALUES (%s, %s, %s, %s, %s, %s)
-                ON CONFLICT (username) 
-                DO UPDATE SET password = EXCLUDED.password, role = 'admin'
-            ''', ('admin', admin_pass, 'Administrador SIG', 'admin@uv.mx', 'Universidad Veracruzana', 'admin'))
+            # Creamos el admin inicial SOLO si la variable de entorno está configurada
+            raw_admin_pass = os.environ.get("ADMIN_PASSWORD")
+            if not raw_admin_pass:
+                print("AVISO: ADMIN_PASSWORD no configurada. No se creó/actualizó el usuario admin.")
+            else:
+                admin_pass = pwd_context.hash(raw_admin_pass)
+                cursor.execute('''
+                    INSERT INTO users (username, password, full_name, email, university, role) 
+                    VALUES (%s, %s, %s, %s, %s, %s)
+                    ON CONFLICT (username) 
+                    DO UPDATE SET password = EXCLUDED.password, role = 'admin'
+                ''', ('admin', admin_pass, 'Administrador SIG', 'admin@uv.mx', 'Universidad Veracruzana', 'admin'))
 
-            # 2. Director: Angel Fernando Arguello
-            director_pass = pwd_context.hash("Arguello2026")
-            cursor.execute('''
-                INSERT INTO users (username, password, full_name, email, university, role) 
-                VALUES (%s, %s, %s, %s, %s, %s)
-                ON CONFLICT (username) 
-                DO UPDATE SET password = EXCLUDED.password, role = 'admin'
-            ''', ('angel.arguello', director_pass, 'Angel Fernando Arguello', 'a_arguello@uv.mx', 'Universidad Veracruzana', 'admin'))
+            # 2. Director: Angel Fernando Arguello (contraseña desde variable de entorno)
+            director_raw_pass = os.environ.get("DIRECTOR_PASSWORD")
+            if not director_raw_pass:
+                print("AVISO: DIRECTOR_PASSWORD no configurada. No se creó/actualizó el usuario director.")
+            else:
+                director_pass = pwd_context.hash(director_raw_pass)
+                cursor.execute('''
+                    INSERT INTO users (username, password, full_name, email, university, role) 
+                    VALUES (%s, %s, %s, %s, %s, %s)
+                    ON CONFLICT (username) 
+                    DO UPDATE SET password = EXCLUDED.password, role = 'admin'
+                ''', ('angel.arguello', director_pass, 'Angel Fernando Arguello', 'a_arguello@uv.mx', 'Universidad Veracruzana', 'admin'))
             
             conn.commit()
             cursor.close()
@@ -613,7 +618,9 @@ async def upload_layer(
     file_type = 'shp' if ext == 'zip' else ext
     if ext == 'json': file_type = 'geojson'
 
-    filename = f"layers/{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}_{file.filename}"
+    # Usar UUID + extensión original para evitar colisiones y nombres predecibles
+    safe_ext = ext  # ya fue validado arriba
+    filename = f"layers/{uuid.uuid4()}.{safe_ext}"
     file_url = f"/uploads/{filename}"
 
     try:
@@ -730,9 +737,17 @@ app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 async def read_index():
     return FileResponse('index.html')
 
+import re
+
+# Sanitizador de nombres de archivo: solo permite letras, números, guiones y guiones bajos
+def _safe_filename(filename: str) -> bool:
+    return bool(re.match(r'^[\w\-]+$', filename))
+
 # Servir archivos GeoJSON y JSON desde la raíz
 @app.get("/{filename}.geojson")
 async def get_geojson(filename: str):
+    if not _safe_filename(filename):
+        raise HTTPException(status_code=400, detail="Nombre de archivo inválido")
     path = f"{filename}.geojson"
     if os.path.exists(path):
         return FileResponse(path)
@@ -740,6 +755,8 @@ async def get_geojson(filename: str):
 
 @app.get("/{filename}.json")
 async def get_json(filename: str):
+    if not _safe_filename(filename):
+        raise HTTPException(status_code=400, detail="Nombre de archivo inválido")
     path = f"{filename}.json"
     if os.path.exists(path):
         return FileResponse(path)
@@ -748,6 +765,8 @@ async def get_json(filename: str):
 # Imágenes sueltas en la raíz
 @app.get("/{filename}.png")
 async def get_png(filename: str):
+    if not _safe_filename(filename):
+        raise HTTPException(status_code=400, detail="Nombre de archivo inválido")
     path = f"{filename}.png"
     if os.path.exists(path):
         return FileResponse(path)
@@ -755,6 +774,8 @@ async def get_png(filename: str):
 
 @app.get("/{filename}.jpg")
 async def get_jpg(filename: str):
+    if not _safe_filename(filename):
+        raise HTTPException(status_code=400, detail="Nombre de archivo inválido")
     path = f"{filename}.jpg"
     if os.path.exists(path):
         return FileResponse(path)

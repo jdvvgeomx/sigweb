@@ -767,11 +767,19 @@ function onMapClickForMarker(e) {
     openMarkerPanel(lat, lng);
 }
 
+// --- PROTECCIÓN XSS: Escapa caracteres HTML en datos de usuario ---
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.appendChild(document.createTextNode(text || ''));
+    return div.innerHTML;
+}
+
 function renderCustomPoints(pointsToRender = customPoints) {
     customPointsLayer.clearLayers();
     pointsToRender.forEach(point => {
         const color = categoryColors[point.category] || '#64748b';
         const iconClass = categoryIcons[point.category] || 'fa-map-pin';
+        // iconClass viene de un mapa controlado (no de datos del usuario), es seguro usarlo directamente
         const marker = L.marker([point.lat, point.lng], {
             icon: L.divIcon({
                 className: 'custom-point-marker',
@@ -781,14 +789,21 @@ function renderCustomPoints(pointsToRender = customPoints) {
             })
         });
 
+        // Construir el popup usando DOM seguro para evitar XSS
         const container = document.createElement('div');
         container.style.minWidth = "250px";
+
+        // Valores escapados de datos del usuario
+        const safeName    = escapeHtml(point.name);
+        const safeAddress = escapeHtml(point.address || '');
+        const safeImgUrl  = point.image_url ? escapeHtml(getFullUrl(point.image_url)) : '';
+
         container.innerHTML = `
-            <h3 style="color: ${color}; font-weight: bold; margin-bottom: 8px; font-size: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom:4px;">${point.name}</h3>
+            <h3 style="color: ${color}; font-weight: bold; margin-bottom: 8px; font-size: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom:4px;">${safeName}</h3>
             <div style="font-size: 12px; color: rgba(255,255,255,0.9);">
-                ${point.image_url ? `<img src="${getFullUrl(point.image_url)}" class="w-full h-32 object-cover rounded-lg mb-3 border border-white/20 shadow-lg cursor-pointer" onclick="window.open('${getFullUrl(point.image_url)}', '_blank')">` : ''}
+                ${safeImgUrl ? `<img src="${safeImgUrl}" class="w-full h-32 object-cover rounded-lg mb-3 border border-white/20 shadow-lg cursor-pointer" onclick="window.open('${safeImgUrl}', '_blank')">` : ''}
                 <p><strong>Categoría:</strong> ${getCategoryLabel(point.category)}</p>
-                <p><strong>Dirección:</strong> ${point.address || ''}</p>
+                <p><strong>Dirección:</strong> ${safeAddress}</p>
                 <p style="font-size: 10px; opacity: 0.7; margin-top: 5px;"><i class="fas fa-location-crosshairs"></i> <b>Lat:</b> ${point.lat.toFixed(6)}, <b>Lng:</b> ${point.lng.toFixed(6)}</p>
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px; padding: 8px 0; border-top: 1px solid rgba(255,255,255,0.1);">
                     <button onclick="likePoint(${point.id}, this)" class="social-btn ${localStorage.getItem('liked_' + point.id) ? 'liked' : ''}">
