@@ -1118,22 +1118,23 @@ function applyMarginacionOverlay() {
     const render = (data) => {
         const layer = L.geoJSON(data, {
             style: (feature) => {
-                const gm = feature.properties.GM_2020 || feature.properties.GM || feature.properties.Grado || 'Medio';
+                const gm = feature.properties.GRADO_MAR || 'Medio';
                 let color = '#fcd34d'; 
                 const gmLower = String(gm).toLowerCase();
                 if (gmLower.includes('muy alto')) color = '#b91c1c';
                 else if (gmLower.includes('alto')) color = '#ef4444';
                 else if (gmLower.includes('medio')) color = '#f97316';
-                else if (gmLower.includes('bajo') && !gmLower.includes('muy bajo')) color = '#eab308';
                 else if (gmLower.includes('muy bajo')) color = '#22c55e';
+                else if (gmLower.includes('bajo')) color = '#eab308';
                 
-                return { color: '#000', weight: 1, fillOpacity: 0.75, fillColor: color };
+                return { color: '#333', weight: 1, fillOpacity: 0.75, fillColor: color };
             },
             onEachFeature: (feature, layer) => {
-                const nom = feature.properties.NOM_ENT || feature.properties.NOMGEO || feature.properties.NOM_MUN || 'Desconocido';
-                const gm = feature.properties.GM_2020 || feature.properties.GM || feature.properties.Grado || 'N/D';
-                const im = feature.properties.IM_2020 || feature.properties.IM || feature.properties.Indice || 'N/D';
-                layer.bindTooltip(`<b>${nom}</b><br>Grado de Marginación: <b>${gm}</b><br>Índice: ${im}`, { sticky: true, className: 'custom-tooltip' });
+                const nom = feature.properties.NOMGEO || feature.properties.NOM_ENT || 'Desconocido';
+                const gm = feature.properties.GRADO_MAR || 'N/D';
+                const im = typeof feature.properties.IM === 'number' ? feature.properties.IM.toFixed(4) : 'N/D';
+                const pob = feature.properties.POB1 ? feature.properties.POB1.toLocaleString() : 'N/D';
+                layer.bindTooltip(`<b>${nom}</b><br>Grado de Marginación: <b>${gm}</b><br>Índice IM: ${im}<br>Población: ${pob}`, { sticky: true, className: 'custom-tooltip' });
             }
         }).addTo(layers.marginacion);
         layers.marginacion.addTo(map);
