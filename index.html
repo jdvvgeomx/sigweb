@@ -236,7 +236,7 @@
                         </ul>
                         <button id="clear-search" onclick="clearMunicipioFilter()"
                             style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: rgba(239,68,68,0.8); color: white; border: none; border-radius: 4px; padding: 4px 8px; font-size: 11px; cursor: pointer; display: none;"
-                            title="Limpiar búsqueda"></button>
+                            title="Limpiar búsqueda">&times;</button>
                     </div>
 
                     <div class="border-t border-white/10 my-4"></div>
@@ -382,7 +382,7 @@
 
     <!-- Panel lateral para marcar puntos personalizados -->
     <div id="point-marker-panel">
-        <button class="close-panel-btn" onclick="closeMarkerPanel()"></button>
+        <button class="close-panel-btn" onclick="closeMarkerPanel()">&times;</button>
 
         <h2>
             <i class="fas fa-map-pin"></i>
@@ -607,7 +607,7 @@
                     <p class="text-xs text-white/60">Administra todos los puntos personalizados en la base de
                         datos</p>
                 </div>
-                <button onclick="closeAdminTable()" class="text-white/60 hover:text-white text-3xl"></button>
+                <button onclick="closeAdminTable()" class="text-white/60 hover:text-white text-3xl">&times;</button>
             </div>
 
             <div class="p-4 bg-white/5 border-b border-white/10 flex gap-4 items-center">
@@ -658,7 +658,7 @@
                     <h2 class="text-2xl font-black text-[#F6C453] uppercase tracking-tighter">Capas Especiales</h2>
                     <p class="text-xs text-white/60">Sube y gestiona archivos SHP, CSV o GeoJSON</p>
                 </div>
-                <button onclick="ui.closeLayersModal()" class="text-white/60 hover:text-white text-3xl"></button>
+                <button onclick="ui.closeLayersModal()" class="text-white/60 hover:text-white text-3xl">&times;</button>
             </div>
 
             <div class="p-6 overflow-auto">
@@ -716,7 +716,7 @@
                     </div>
                 </div>
                 <button onclick="ui.closeManualModal()"
-                    class="relative z-10 w-10 h-10 rounded-xl bg-white/10 hover:bg-red-500/60 text-white text-xl flex items-center justify-center transition-all"></button>
+                    class="relative z-10 w-10 h-10 rounded-xl bg-white/10 hover:bg-red-500/60 text-white text-xl flex items-center justify-center transition-all">&times;</button>
             </div>
 
             <!-- Intro banner -->
@@ -990,7 +990,7 @@
                     </div>
                 </div>
                 <button onclick="ui.closeMetadataModal()"
-                    class="relative z-10 w-10 h-10 rounded-xl bg-white/10 hover:bg-red-500/60 text-white text-xl flex items-center justify-center transition-all"></button>
+                    class="relative z-10 w-10 h-10 rounded-xl bg-white/10 hover:bg-red-500/60 text-white text-xl flex items-center justify-center transition-all">&times;</button>
             </div>
 
             <!-- Badge norma -->
@@ -1196,7 +1196,7 @@
         <div class="bg-[#1e3c72] w-full max-w-md rounded-3xl overflow-hidden shadow-2xl border border-white/20">
             <div class="p-6 bg-gradient-to-r from-[#1e3c72] to-[#1a2a6c] flex justify-between items-center border-b border-white/10">
                 <h2 class="text-xl font-black text-[#F6C453] uppercase tracking-tighter">Seguridad</h2>
-                <button onclick="ui.closePasswordModal()" class="text-white/60 hover:text-white text-2xl"></button>
+                <button onclick="ui.closePasswordModal()" class="text-white/60 hover:text-white text-2xl">&times;</button>
             </div>
             <div class="p-8">
                 <p class="text-xs text-white/60 mb-6 italic">Ingresa tu contraseña actual y la nueva clave que deseas usar.</p>
@@ -1262,13 +1262,13 @@
 
     <!-- Scripts JS - Orden de dependencia -->
     <!-- ================================ -->
-    <script src="js/config.js?v=6"></script>
-    <script src="js/api.js?v=6"></script>
-    <script src="js/auth.js?v=6"></script>
-    <script src="js/ui.js?v=6"></script>
-    <script src="js/analysis.js?v=6"></script>
-    <script src="js/map.js?v=6"></script>
-    <script src="js/main.js?v=6"></script>
+    <script src="js/config.js?v=7"></script>
+    <script src="js/api.js?v=7"></script>
+    <script src="js/auth.js?v=7"></script>
+    <script src="js/ui.js?v=7"></script>
+    <script src="js/analysis.js?v=7"></script>
+    <script src="js/map.js?v=7"></script>
+    <script src="js/main.js?v=7"></script>
 
 </body>
 
