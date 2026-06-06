@@ -940,6 +940,7 @@ function showChiapasState() {
     actualizarLeyenda('chiapas_estatal');
 
     const render = (data) => {
+        layers.chiapasEstado.clearLayers();
         const layer = L.geoJSON(data, { style: { color: '#f97316', weight: 2, fillOpacity: 0.2, fillColor: '#f97316' } }).addTo(layers.chiapasEstado);
         try { map.fitBounds(layer.getBounds(), { padding: [30, 30] }); } catch (e) { }
     };
@@ -952,6 +953,7 @@ function showChiapasState() {
             render(data);
         }).catch(e => console.warn("Error cargando chiapas estado", e));
     }
+    layers.chiapasEstado.addTo(map);
     checkMarginacionOverlay();
     checkCrecimientoOverlay();
 }
@@ -970,6 +972,7 @@ function showChiapasMunicipalities() {
     actualizarLeyenda('chiapas_municipios');
 
     const render = (data) => {
+        layers.chiapasMunicipios.clearLayers();
         const layer = L.geoJSON(data, {
             style: { color: '#ea580c', weight: 1, fillOpacity: 0.1, fillColor: '#fdba74' },
             onEachFeature: (feature, layer) => {
@@ -988,6 +991,7 @@ function showChiapasMunicipalities() {
             render(data);
         }).catch(e => console.warn("Error", e));
     }
+    layers.chiapasMunicipios.addTo(map);
     checkMarginacionOverlay();
     checkCrecimientoOverlay();
 }
@@ -1006,6 +1010,7 @@ function showChiapasRegions() {
     actualizarLeyenda('chiapas_regiones');
 
     const render = (data) => {
+        layers.chiapasRegiones.clearLayers();
         const layer = L.geoJSON(data, {
             style: (feature) => {
                 return { color: '#c2410c', weight: 2, fillOpacity: 0.4, fillColor: getRandomColor(feature.properties.REGION || feature.properties.NOM_REGION) };
@@ -1026,6 +1031,7 @@ function showChiapasRegions() {
             render(data);
         }).catch(e => console.warn("Error", e));
     }
+    layers.chiapasRegiones.addTo(map);
     checkMarginacionOverlay();
     checkCrecimientoOverlay();
 }
@@ -1044,6 +1050,7 @@ function showChiapasForgotten() {
     actualizarLeyenda('chiapas_olvidados');
 
     const render = (data) => {
+        layers.chiapasOlvidados.clearLayers();
         const layer = L.geoJSON(data, {
             style: { color: '#b91c1c', weight: 2, fillOpacity: 0.5, fillColor: '#ef4444' },
             onEachFeature: (feature, layer) => {
@@ -1062,6 +1069,7 @@ function showChiapasForgotten() {
             render(data);
         }).catch(e => console.warn("Error", e));
     }
+    layers.chiapasOlvidados.addTo(map);
     checkMarginacionOverlay();
     checkCrecimientoOverlay();
 }
