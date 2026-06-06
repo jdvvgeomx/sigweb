@@ -1,4 +1,4 @@
-var map = L.map('map', { zoomControl: false }).setView([19.17, -96.13], 7);
+var map = L.map('map', { zoomControl: false }).setView([23.6345, -102.5528], 5);
 
 const baseLayers = {
     'Mapa Claro': L.tileLayer('https://cartodb-basemaps-a.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png', {
@@ -101,7 +101,7 @@ L.control.zoom({ position: 'bottomright' }).addTo(map);
 L.control.scale({ position: 'bottomleft', imperial: false }).addTo(map);
 
 L.easyButton('<span title="Centro">⤒</span>', function (btn, m) {
-    map.setView([19.17, -96.13], 7);
+    map.setView([23.6345, -102.5528], 5);
 }).addTo(map);
 
 var compassControl = L.Control.extend({
@@ -1087,10 +1087,10 @@ function showChiapasRegions() {
         layers.chiapasRegiones.clearLayers();
         const layer = L.geoJSON(data, {
             style: (feature) => {
-                return { color: '#c2410c', weight: 2, fillOpacity: 0.4, fillColor: getRandomColor(feature.properties.REGION || feature.properties.NOM_REGION) };
+                return { color: '#c2410c', weight: 2, fillOpacity: 0.4, fillColor: getRandomColor(feature.properties.Region || feature.properties.REGION || feature.properties.NOM_REGION) };
             },
             onEachFeature: (feature, layer) => {
-                const nom = feature.properties.REGION || feature.properties.NOM_REGION || 'Región';
+                const nom = feature.properties.Region || feature.properties.REGION || feature.properties.NOM_REGION || 'Región';
                 layer.bindTooltip(`<b>${nom}</b>`, { sticky: true, className: 'custom-tooltip' });
             }
         }).addTo(layers.chiapasRegiones);
