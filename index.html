@@ -80,54 +80,58 @@
 
 
 
-    <nav class="bg-[#006847] text-white py-3 px-6 shadow-lg relative z-50">
-        <div class="max-w-7xl mx-auto flex justify-between items-center gap-2 md:gap-4">
+    <nav class="bg-white text-[#006847] py-2 px-3 sm:py-3 sm:px-6 shadow-md border-b border-gray-100 relative z-50">
+        <div class="w-full flex justify-between items-center gap-2">
 
-            <!-- Izquierda: Universidad Veracruzana -->
-            <div class="flex items-center gap-2 md:gap-4 flex-1 min-w-0">
-                <img src="uv_logo.png" class="h-10 md:h-14 shrink-0"
-                    style="filter: drop-shadow(0 0 8px rgba(255,255,255,0.8));" alt="Logo UV" />
-                <h1 class="font-bold text-[10px] md:text-lg leading-tight truncate">
-                    Universidad <br class="hidden sm:block">Veracruzana
-                </h1>
-            </div>
-
-            <!-- Centro: Título Mapa -->
-            <div class="flex-[1.5] text-center">
-                <h2
-                    class="text-sm md:text-2xl font-black text-[#F6C453] tracking-wider uppercase drop-shadow-md whitespace-nowrap">
-                    Geoportal Interactivo
-                </h2>
-                <div class="h-1 w-12 md:w-20 bg-[#F6C453] mx-auto mt-0.5 md:mt-1 rounded-full opacity-80"></div>
-            </div>
-
-            <!-- Derecha: Licenciatura y Login -->
-            <div class="flex-1 text-right flex justify-end items-center min-w-0 gap-3">
-                <div class="border-l border-[#F6C453]/30 md:border-l-2 pl-2 md:pl-4">
-                    <p
-                        class="text-[9px] md:text-sm font-semibold leading-tight uppercase tracking-tight md:tracking-normal">
-                        Licenciatura <br class="hidden sm:block"> en Geografía
-                    </p>
+            <!-- Izquierda: Logo UV + Facultad + Licenciatura -->
+            <div class="flex items-center gap-1.5 sm:gap-2 md:gap-3 shrink-0">
+                <img src="uv_logo.png" class="h-7 sm:h-9 md:h-11 shrink-0"
+                    style="filter: drop-shadow(0 2px 4px rgba(0,0,0,0.08));" alt="Logo UV" />
+                <!-- Texto: oculto en móvil muy pequeño, visible desde sm -->
+                <div class="hidden xs:flex sm:flex flex-col justify-center border-l border-[#006847]/20 pl-1.5 sm:pl-2 md:pl-3">
+                    <span class="font-bold text-[8px] sm:text-[10px] md:text-sm leading-tight text-[#006847] whitespace-nowrap">
+                        Facultad de Economía
+                    </span>
+                    <span class="font-semibold text-[7px] sm:text-[9px] md:text-xs leading-tight text-[#006847]/70 mt-0.5 uppercase tracking-wide whitespace-nowrap">
+                        Licenciatura en Geografía
+                    </span>
                 </div>
+            </div>
+
+            <!-- Centro: Título Geoportal -->
+            <div class="flex-1 text-center px-1">
+                <h2 class="text-[10px] sm:text-sm md:text-xl lg:text-2xl font-black text-[#006847] tracking-wider uppercase leading-tight">
+                    Geoportal Interactivo UV
+                </h2>
+                <div class="h-0.5 w-8 sm:w-12 md:w-20 bg-[#F6C453] mx-auto mt-0.5 rounded-full opacity-80"></div>
+            </div>
+
+            <!-- Derecha: Logos FacES + AP + Login -->
+            <div class="flex items-center gap-1.5 sm:gap-2 md:gap-3 shrink-0">
+                <!-- Logos: visible desde sm -->
+                <img src="LogoFacEs.jpg" class="hidden sm:block h-7 sm:h-9 md:h-11 shrink-0 rounded shadow-sm border border-gray-100"
+                    alt="Logo FacES" />
+                <img src="LogoAP.jpg" class="hidden sm:block h-7 sm:h-9 md:h-11 shrink-0 rounded shadow-sm border border-gray-100"
+                    alt="Logo AP" />
                 <div id="auth-container">
                     <button onclick="openLoginModal()" id="login-btn"
-                        class="bg-[#F6C453] text-[#006847] px-3 py-1 md:px-4 md:py-2 rounded-lg font-bold text-[10px] md:text-xs uppercase hover:bg-white transition-all shadow-md">
-                        <i class="fas fa-sign-in-alt"></i> Login
+                        class="bg-[#F6C453] text-[#006847] px-2 py-1 sm:px-3 md:px-4 md:py-2 rounded-lg font-bold text-[9px] sm:text-[10px] md:text-xs uppercase hover:bg-[#006847] hover:text-white transition-all shadow-md whitespace-nowrap">
+                        <i class="fas fa-sign-in-alt"></i><span class="hidden sm:inline"> Login</span>
                     </button>
-                    <div id="user-logged-in" class="hidden flex items-center gap-1 md:gap-3">
-                        <span id="username-display" class="text-[10px] md:text-sm font-black text-[#F6C453] tracking-tight"></span>
-                        <div class="flex items-center gap-1">
+                    <div id="user-logged-in" class="hidden flex items-center gap-1 md:gap-2">
+                        <span id="username-display" class="hidden md:inline text-[10px] md:text-sm font-black text-[#006847] tracking-tight"></span>
+                        <div class="flex items-center gap-0.5 md:gap-1">
                             <button onclick="ui.openPasswordModal()" title="Cambiar Contraseña"
-                                class="text-[#F6C453]/70 hover:text-white transition-colors p-1">
+                                class="text-[#006847]/70 hover:text-[#006847] transition-colors p-1">
                                 <i class="fas fa-key text-[10px] md:text-sm"></i>
                             </button>
                             <button id="admin-panel-btn-top" onclick="openAdminTable()" title="Panel de Gestión"
-                                class="hidden text-[#F6C453] hover:text-white transition-colors p-1 flex items-center gap-1 border border-[#F6C453]/40 rounded-md px-2 ml-1">
+                                class="hidden text-[#006847] hover:bg-[#006847] hover:text-white transition-colors p-1 flex items-center gap-1 border border-[#006847]/40 rounded-md px-1.5 md:px-2">
                                 <i class="fas fa-hammer text-[10px] md:text-sm"></i>
-                                <span class="text-[9px] font-black uppercase">ADMIN</span>
+                                <span class="hidden sm:inline text-[9px] font-black uppercase">ADMIN</span>
                             </button>
                             <button onclick="logout()" title="Cerrar Sesión"
-                                class="text-white/60 hover:text-red-400 font-bold text-[10px] md:text-xs uppercase p-1">
+                                class="text-[#006847]/60 hover:text-red-600 font-bold text-[10px] md:text-xs uppercase p-1">
                                 <i class="fas fa-sign-out-alt"></i>
                             </button>
                         </div>

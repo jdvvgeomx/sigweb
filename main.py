@@ -781,6 +781,15 @@ async def get_jpg(filename: str):
         return FileResponse(path)
     raise HTTPException(status_code=404)
 
+@app.get("/{filename}.jpeg")
+async def get_jpeg(filename: str):
+    if not _safe_filename(filename):
+        raise HTTPException(status_code=400, detail="Nombre de archivo inválido")
+    path = f"{filename}.jpeg"
+    if os.path.exists(path):
+        return FileResponse(path)
+    raise HTTPException(status_code=404)
+
 if __name__ == "__main__":
     import uvicorn
     port = int(os.environ.get("PORT", 8000))
