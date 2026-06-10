@@ -647,7 +647,7 @@ function showUVRegions() {
     }).catch(e => console.warn("Error UV regiones", e));
 }
 
-let regionesVerGeoJSONs = {};
+let regionesVerGeoJSON = null;
 
 function showVeracruzRegions() {
     if (currentScale === 'regiones_ver') {
@@ -671,81 +671,43 @@ function showVeracruzRegions() {
         return;
     }
 
-    const regionFiles = {
-        'Huasteca Alta': { file: 'HuastecaAlta.geojson', color: '#3B82F6' },
-        'Huasteca Baja': { file: 'HuastecaBaja.geojson', color: '#60A5FA' },
-        'Totonaca': { file: 'Totonaca.geojson', color: '#F97316' },
-        'Nautla': { file: 'Nautla1.geojson', color: '#FB923C' },
-        'Capital': { file: 'Capital.geojson', color: '#10B981' },
-        'Grandes Montañas': { file: 'AltasMontanas.geojson', color: '#84CC16' },
-        'Sotavento': { file: 'Sotavento.geojson', color: '#EF4444' },
-        'Papaloapan': { file: 'Papaloapan.geojson', color: '#F43F5E' },
-        'Los Tuxtlas': { file: 'LosTuxtlas.geojson', color: '#8B5CF6' },
-        'Olmeca': { file: 'Olmeca.geojson', color: '#EC4899' }
-    };
-
-
-    const promises = Object.entries(regionFiles).map(([regionName, info]) => {
-        if (regionesVerGeoJSONs[regionName]) {
-            return Promise.resolve({ name: regionName, data: regionesVerGeoJSONs[regionName], color: info.color });
-        }
-        return fetch(info.file)
-            .then(r => r.json())
-            .then(data => {
-                regionesVerGeoJSONs[regionName] = data;
-                return { name: regionName, data: data, color: info.color };
-            })
-            .catch(e => {
-                console.error(`Error cargando la región ${regionName}:`, e);
-                return null;
-            });
-    });
-
-    Promise.all(promises).then(results => {
-        const activeResults = results.filter(r => r !== null);
-        
-        activeResults.forEach(res => {
-            let unioned = null;
-            try {
-                if (res.data.features && res.data.features.length > 0) {
-                    unioned = JSON.parse(JSON.stringify(res.data.features[0]));
-                    for (let i = 1; i < res.data.features.length; i++) {
-                        unioned = turf.union(unioned, res.data.features[i]);
-                    }
-                }
-            } catch (err) {
-                console.error("Error unioning features for region:", res.name, err);
+    const render = (data) => {
+        const geoJsonLayer = L.geoJSON(data, {
+            style: (feature) => ({
+                color: 'white',
+                weight: 2,
+                fillColor: feature.properties.color || '#cccccc',
+                fillOpacity: 0.5,
+                opacity: 1
+            }),
+            onEachFeature: (feature, layer) => {
+                layer.bindTooltip(`<b>Región: ${feature.properties.name}</b>`, {
+                    sticky: true,
+                    className: 'custom-tooltip'
+                });
             }
-
-            const renderData = unioned || res.data;
-
-            const geoJsonLayer = L.geoJSON(renderData, {
-                style: () => ({
-                    color: 'white',
-                    weight: 2,
-                    fillColor: res.color,
-                    fillOpacity: 0.5,
-                    opacity: 1
-                }),
-                onEachFeature: (f, l) => {
-                    l.bindTooltip(`<b>Región: ${res.name}</b>`, {
-                        sticky: true,
-                        className: 'custom-tooltip'
-                    });
-                }
-            });
-            layers.regionesVer.addLayer(geoJsonLayer);
         });
-
+        layers.regionesVer.addLayer(geoJsonLayer);
         layers.regionesVer.addTo(map);
         try { map.fitBounds(layers.regionesVer.getBounds(), { padding: [30, 30] }); } catch (e) { }
+    };
 
-    }).catch(err => {
-        console.error("Error cargando regiones de Veracruz:", err);
-        if (typeof showNotification === 'function') {
-            showNotification('Error al cargar las regiones.', 'error');
-        }
-    });
+    if (regionesVerGeoJSON) {
+        render(regionesVerGeoJSON);
+    } else {
+        fetch('regiones_veracruz_opt.geojson')
+            .then(r => r.json())
+            .then(data => {
+                regionesVerGeoJSON = data;
+                render(data);
+            })
+            .catch(err => {
+                console.error("Error cargando regiones de Veracruz:", err);
+                if (typeof showNotification === 'function') {
+                    showNotification('Error al cargar las regiones.', 'error');
+                }
+            });
+    }
 }
 
 function normalizar(txt) {
