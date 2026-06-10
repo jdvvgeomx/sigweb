@@ -281,7 +281,7 @@ function showNational() {
                     <p class="text-2xl font-black text-[#F6C453]">${(pn.POB1 || 0).toLocaleString()}</p>
                 </div>
                 </ul>
-                <div class="relative h-44 w-full">
+                <div class="relative h-36 sm:h-44 w-full">
                     <canvas id="poblacionChartNacional"></canvas>
                 </div>
             </div>
@@ -439,7 +439,7 @@ function showState() {
                         <b class="text-white">${(pv.POB42 || 0).toLocaleString()}</b>
                     </li>
                 </ul>
-                <div class="relative h-44 w-full">
+                <div class="relative h-36 sm:h-44 w-full">
                     <canvas id="poblacionChartEstatal"></canvas>
                 </div>
             </div>
@@ -1020,7 +1020,7 @@ function showChiapasState() {
                     <b class="text-white">${(pc.POB42).toLocaleString()}</b>
                 </li>
             </ul>
-            <div class="relative h-44 w-full">
+            <div class="relative h-36 sm:h-44 w-full">
                 <canvas id="poblacionChartChiapasEstatal"></canvas>
             </div>
         </div>
@@ -1302,22 +1302,21 @@ function applyMarginacionOverlay() {
         const layer = L.geoJSON(data, {
             style: (feature) => {
                 const gm = feature.properties.GRADO_MAR || 'Medio';
-                let color = '#fcd34d'; 
+                let color = '#FFD700'; // Bajo por defecto
                 const gmLower = String(gm).toLowerCase();
-                if (gmLower.includes('muy alto')) color = '#b91c1c';
-                else if (gmLower.includes('alto')) color = '#ef4444';
-                else if (gmLower.includes('medio')) color = '#f97316';
-                else if (gmLower.includes('muy bajo')) color = '#22c55e';
-                else if (gmLower.includes('bajo')) color = '#eab308';
+                if (gmLower.includes('muy alto')) color = '#8B0000';      // Rojo oscuro
+                else if (gmLower.includes('alto')) color = '#CC0000';     // Rojo
+                else if (gmLower.includes('medio')) color = '#FF8C00';    // Naranja
+                else if (gmLower.includes('muy bajo')) color = '#F5F5DC'; // Crema/Muy bajo
+                else if (gmLower.includes('bajo')) color = '#FFD700';     // Amarillo
                 
-                return { color: '#333', weight: 1, fillOpacity: 0.75, fillColor: color };
+                return { color: '#555', weight: 1, fillOpacity: 0.80, fillColor: color };
             },
             onEachFeature: (feature, layer) => {
                 const nom = feature.properties.NOMGEO || feature.properties.NOM_ENT || 'Desconocido';
                 const gm = feature.properties.GRADO_MAR || 'N/D';
-                const im = typeof feature.properties.IM === 'number' ? feature.properties.IM.toFixed(4) : 'N/D';
                 const pob = feature.properties.POB1 ? feature.properties.POB1.toLocaleString() : 'N/D';
-                layer.bindTooltip(`<b>${nom}</b><br>Grado de Marginación: <b>${gm}</b><br>Índice IM: ${im}<br>Población: ${pob}`, { sticky: true, className: 'custom-tooltip' });
+                layer.bindTooltip(`<b>${nom}</b><br>Grado de Marginación: <b>${gm}</b><br>Población: ${pob}`, { sticky: true, className: 'custom-tooltip' });
             }
         }).addTo(layers.marginacion);
         layers.marginacion.addTo(map);

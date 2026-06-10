@@ -521,7 +521,7 @@ function mostrarInfoMunicipio(cve, nombre) {
                     <p class="text-3xl font-black text-white">${(p.POB1 || 0).toLocaleString()}</p>
                 </div>
 
-                <div class="relative h-64 w-full bg-black/20 rounded-2xl border border-white/5 p-2 mb-5">
+                <div class="relative h-40 sm:h-56 w-full bg-black/20 rounded-2xl border border-white/5 p-2 mb-5">
                     <canvas id="poblacionChart"></canvas>
                 </div>
 
