@@ -8,4 +8,21 @@ static/data/points.json
 geojson_originals_backup/
 simplify_geojson.py
 merge_regions.py
-.env
+
+# Backups and temporary files
+backups/
+*.bak
+test.png
+capturas/
+
+# Logs and DB logs
+db_check_log.txt
+*.log
+
+# Large files and documents
+*.docx
+*.xlsx
+marginacion_municipal_nacional_2020.geojson
+
+# Uploads directory
+uploads/
