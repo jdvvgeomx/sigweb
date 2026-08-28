@@ -2,17 +2,17 @@ var map = L.map('map', { zoomControl: false }).setView([23.6345, -102.5528], 5);
 
 const baseLayers = {
     'Mapa Claro': L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/light_all/{z}/{x}/{y}.png?key=cb1_2ew7_1_a246f4e9d19a01f2445215e3', {
-        attribution: '&copy; OpenStreetMap · CartoDB',
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions" target="_blank" rel="noopener noreferrer">CARTO</a>',
         subdomains: 'abcd',
         maxZoom: 19
     }),
     'Satélite Híbrido': L.layerGroup([
         L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-            attribution: '&copy; Esri',
+            attribution: '&copy; <a href="https://www.esri.com/" target="_blank" rel="noopener noreferrer">Esri</a>',
             maxZoom: 19
         }),
         L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/dark_only_labels/{z}/{x}/{y}.png?key=cb1_2ew7_1_a246f4e9d19a01f2445215e3', {
-            attribution: '&copy; CartoDB',
+            attribution: '&copy; <a href="https://carto.com/attributions" target="_blank" rel="noopener noreferrer">CARTO</a>',
             subdomains: 'abcd',
             maxZoom: 19,
             pane: 'markerPane'
