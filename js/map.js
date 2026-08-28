@@ -1,8 +1,9 @@
 var map = L.map('map', { zoomControl: false }).setView([23.6345, -102.5528], 5);
 
 const baseLayers = {
-    'Mapa Claro': L.tileLayer('https://cartodb-basemaps-a.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png', {
+    'Mapa Claro': L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/light_all/{z}/{x}/{y}.png?key=cb1_2ew7_1_a246f4e9d19a01f2445215e3', {
         attribution: '&copy; OpenStreetMap · CartoDB',
+        subdomains: 'abcd',
         maxZoom: 19
     }),
     'Satélite Híbrido': L.layerGroup([
@@ -10,8 +11,9 @@ const baseLayers = {
             attribution: '&copy; Esri',
             maxZoom: 19
         }),
-        L.tileLayer('https://cartodb-basemaps-a.global.ssl.fastly.net/dark_only_labels/{z}/{x}/{y}.png', {
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/dark_only_labels/{z}/{x}/{y}.png?key=cb1_2ew7_1_a246f4e9d19a01f2445215e3', {
             attribution: '&copy; CartoDB',
+            subdomains: 'abcd',
             maxZoom: 19,
             pane: 'markerPane'
         })
